@@ -1,0 +1,1 @@
+-- Aquí van los inserts iniciales: documentos, listas de stop words, sinónimos, reglas de sufijos y datos de prueba.
