@@ -1,6 +1,4 @@
-# LSI Document Base
-
-````markdown
+````
 # Latent Semantic Indexing Document Base
 
 Sistema de recuperación documental basado en **Latent Semantic Indexing (LSI)** para indexar, representar y consultar una base de documentos mediante técnicas de recuperación de información, reducción dimensional con **SVD**, y comparación por funciones de similitud y disimilitud.
