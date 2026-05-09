@@ -1,1 +1,0 @@
--- Aquí va la definición completa de la base de datos relacional: tablas, llaves primarias, foráneas e índices.

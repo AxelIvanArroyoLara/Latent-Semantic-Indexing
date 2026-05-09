@@ -1,0 +1,11 @@
+com\lsi\query\RankingServiceTest.class
+com\lsi\persistence\FrequencyRepositoryTest.class
+com\lsi\persistence\QueryLogRepositoryTest.class
+com\lsi\lsi\LsiReducerTest.class
+com\lsi\persistence\DocumentRepositoryTest.class
+com\lsi\preprocessing\PreprocessingPipelineTest.class
+com\lsi\semantic\SemanticPipelineTest.class
+com\lsi\persistence\TermRepositoryTest.class
+com\lsi\indexing\FrequencyMatrixBuilderTest.class
+com\lsi\config\DatabaseConfigTest.class
+com\lsi\persistence\LsiRepositoryTest.class
