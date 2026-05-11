@@ -1,1 +1,0 @@
-# Aquí va la lista de stop words que se eliminarán durante el preprocesamiento.
