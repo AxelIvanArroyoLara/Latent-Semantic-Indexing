@@ -5,4 +5,3 @@
 .vscode/
 *.iml
 .DS_Store
-target/
