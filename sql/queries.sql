@@ -1,1 +1,0 @@
--- Aquí van las consultas SQL de apoyo para validación, depuración, reportes y pruebas del sistema.
