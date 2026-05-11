@@ -1,1 +1,0 @@
-# Aquí van las reglas de sufijos utilizadas para normalización o stemming simple.
