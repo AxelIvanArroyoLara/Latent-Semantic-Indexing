@@ -55,6 +55,12 @@
             <version>${junit4.version}</version>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>org.ejml</groupId>
+            <artifactId>ejml-simple</artifactId>
+            <version>0.41</version>
+        </dependency>
     </dependencies>
 
     <build>
