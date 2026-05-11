@@ -7,6 +7,7 @@ import java.util.*;
 
 public class FrequencyMatrixBuilder {
 
+
     public FrequencyMatrix build(List<SemanticDocument> docs) {
         return build(docs, true);
     }
@@ -232,6 +233,7 @@ public class FrequencyMatrixBuilder {
                         "Document terms cannot be null"
                 );
             }
-                }
         }
+    }
 }
+

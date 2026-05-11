@@ -196,6 +196,6 @@ public class LsiReducer {
             }
         }
 
-                return arr;
-        }
+        return arr;
+    }
 }
