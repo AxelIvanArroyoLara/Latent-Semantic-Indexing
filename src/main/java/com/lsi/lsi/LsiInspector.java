@@ -35,7 +35,7 @@ public class LsiInspector {
         for (int i = 0; i < sv.length; i++) {
 
             sb.append(String.format(
-                    "  σ%d = %.4f%n",
+                    "  Ïƒ%d = %.4f%n",
                     i + 1,
                     sv[i]
             ));
@@ -60,7 +60,7 @@ public class LsiInspector {
                 .append(model.k())
                 .append("\n");
 
-        sb.append("  Términos: ")
+        sb.append("  TÃ©rminos: ")
                 .append(model.termVectors().length)
                 .append(" x ")
                 .append(model.k())
@@ -165,3 +165,4 @@ public class LsiInspector {
             double weight
     ) {}
 }
+

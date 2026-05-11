@@ -1,7 +1,7 @@
 package com.lsi.lsi;
 
 /*
- * Aquí van las pruebas unitarias de la reducción LSI y validación de dimensiones.
+ * AquÃ­ van las pruebas unitarias de la reducciÃ³n LSI y validaciÃ³n de dimensiones.
  */
 public class LsiReducerTest {
 }

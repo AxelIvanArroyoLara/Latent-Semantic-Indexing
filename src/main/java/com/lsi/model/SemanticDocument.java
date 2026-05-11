@@ -8,3 +8,4 @@ public record SemanticDocument(
         List<String> canonicalTerms,
         Map<String, Object> metadata
 ) {}
+

@@ -14,9 +14,9 @@ public class LsiReducer {
             Logger.getLogger(LsiReducer.class.getName());
 
     /**
-     * Reduce la matriz término-documento usando LSI/SVD.
+     * Reduce la matriz tÃ©rmino-documento usando LSI/SVD.
      *
-     * Convención utilizada:
+     * ConvenciÃ³n utilizada:
      *
      * documentVectors[documentIndex][latentDimension]
      * termVectors[termIndex][latentDimension]
@@ -35,7 +35,7 @@ public class LsiReducer {
 
         // =========================================
         // 1. Construir matriz A
-        // términos x documentos
+        // tÃ©rminos x documentos
         // =========================================
 
         double[][] raw = freqMatrix.values();
@@ -199,3 +199,4 @@ public class LsiReducer {
         return arr;
     }
 }
+

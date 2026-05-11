@@ -36,7 +36,7 @@ public class FrequencyMatrixBuilder {
         Collections.sort(terms);
 
         // =========================================
-        // 2. Códigos de documentos
+        // 2. CÃ³digos de documentos
         // =========================================
 
         List<String> documentCodes =
@@ -48,7 +48,7 @@ public class FrequencyMatrixBuilder {
         }
 
         // =========================================
-        // 3. Matriz término-documento
+        // 3. Matriz tÃ©rmino-documento
         // rows = terms
         // cols = documents
         // =========================================
@@ -60,7 +60,7 @@ public class FrequencyMatrixBuilder {
                 new double[termCount][docCount];
 
         // =========================================
-        // 4. Índice término -> fila
+        // 4. Ãndice tÃ©rmino -> fila
         // =========================================
 
         Map<String, Integer> termIndex =
@@ -149,7 +149,7 @@ public class FrequencyMatrixBuilder {
 
         // =========================================
         // DF(t)
-        // Número de documentos que contienen t
+        // NÃºmero de documentos que contienen t
         // =========================================
 
         for (int term = 0;
@@ -236,4 +236,5 @@ public class FrequencyMatrixBuilder {
         }
     }
 }
+
 

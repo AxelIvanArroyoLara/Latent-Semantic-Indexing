@@ -1,7 +1,7 @@
 package com.lsi.indexing;
 
 /*
- * Aquí van las pruebas unitarias de la construcción de FrecT.
+ * AquÃ­ van las pruebas unitarias de la construcciÃ³n de FrecT.
  */
 public class FrequencyMatrixBuilderTest {
 }

@@ -1,7 +1,8 @@
 package com.lsi.ui;
 
 /*
- * Aquí va la lógica para imprimir menús, mensajes, tablas simples y resultados en consola.
+ * AquÃ­ va la lÃ³gica para imprimir menÃºs, mensajes, tablas simples y resultados en consola.
  */
 public class MenuRenderer {
 }
+

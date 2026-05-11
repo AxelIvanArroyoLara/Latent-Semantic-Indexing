@@ -1,7 +1,8 @@
 package com.lsi.lsi;
 
 /*
- * Aquí va la lógica para aplicar la descomposición SVD a la matriz de frecuencias.
+ * AquÃ­ va la lÃ³gica para aplicar la descomposiciÃ³n SVD a la matriz de frecuencias.
  */
 public class SvdDecomposer {
 }
+

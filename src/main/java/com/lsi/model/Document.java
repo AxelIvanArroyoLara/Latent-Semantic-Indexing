@@ -1,7 +1,44 @@
 package com.lsi.model;
 
-/*
- * Aquí va la entidad de documento con id, título, fuente, texto crudo y texto procesado.
+/**
+ * In-memory document used by the local indexing pipeline.
  */
-public class Document {
+public record Document(
+        String code,
+        String title,
+        String source,
+        String rawText,
+        String normalizedText
+) {
+
+    public Document {
+        if (code == null || code.isBlank()) {
+            throw new IllegalArgumentException("Document code cannot be blank");
+        }
+
+        if (title == null || title.isBlank()) {
+            title = code;
+        }
+
+        if (source == null) {
+            source = "";
+        }
+
+        if (rawText == null) {
+            rawText = "";
+        }
+
+        if (normalizedText == null) {
+            normalizedText = "";
+        }
+    }
+
+    public String textForProcessing() {
+        if (!normalizedText.isBlank()) {
+            return normalizedText;
+        }
+
+        return rawText;
+    }
 }
+

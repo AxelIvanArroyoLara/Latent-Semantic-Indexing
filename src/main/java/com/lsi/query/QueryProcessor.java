@@ -1,5 +1,10 @@
 package com.lsi.query;
 
+import com.lsi.indexing.IndexingService;
+import com.lsi.model.LatentSpaceModel;
+import com.lsi.preprocessing.PreprocessingPipeline;
+import com.lsi.semantic.SemanticPipeline;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -19,6 +24,9 @@ public class QueryProcessor {
     private final RankingService rankingService;
     private final DocumentSimilarityService documentSimilarityService;
     private final Path fixtureDir;
+    private final FixtureData indexedData;
+    private final PreprocessingPipeline preprocessingPipeline;
+    private final SemanticPipeline semanticPipeline;
 
     public QueryProcessor() {
         this(DEFAULT_FIXTURE_DIR);
@@ -28,6 +36,18 @@ public class QueryProcessor {
         this.fixtureDir = fixtureDir;
         this.rankingService = new RankingService();
         this.documentSimilarityService = new DocumentSimilarityService();
+        this.indexedData = null;
+        this.preprocessingPipeline = new PreprocessingPipeline();
+        this.semanticPipeline = new SemanticPipeline();
+    }
+
+    public QueryProcessor(IndexingService.IndexedCorpus indexedCorpus) {
+        this.fixtureDir = DEFAULT_FIXTURE_DIR;
+        this.rankingService = new RankingService();
+        this.documentSimilarityService = new DocumentSimilarityService();
+        this.indexedData = fromIndexedCorpus(indexedCorpus);
+        this.preprocessingPipeline = new PreprocessingPipeline();
+        this.semanticPipeline = new SemanticPipeline();
     }
 
     public DocumentSimilarityService.ComparisonResult compareDocuments(String firstCode, String secondCode) {
@@ -80,6 +100,10 @@ public class QueryProcessor {
     }
 
     private FixtureData loadFixtureData() {
+        if (indexedData != null) {
+            return indexedData;
+        }
+
         try {
             Map<String, RankingService.DocumentVector> documentVectors = loadDocumentVectors();
             Map<String, RankingService.DocumentTerms> documentTerms = loadDocumentTerms();
@@ -89,6 +113,42 @@ public class QueryProcessor {
         } catch (IOException e) {
             throw new IllegalStateException("Could not load query fixtures from " + fixtureDir, e);
         }
+    }
+
+    private FixtureData fromIndexedCorpus(IndexingService.IndexedCorpus indexedCorpus) {
+        if (indexedCorpus == null) {
+            throw new IllegalArgumentException("Indexed corpus cannot be null");
+        }
+
+        LatentSpaceModel model = indexedCorpus.latentSpaceModel();
+        Map<String, RankingService.DocumentVector> documentVectors = new LinkedHashMap<>();
+        Map<String, RankingService.DocumentTerms> documentTerms = new LinkedHashMap<>();
+        Map<String, double[]> termVectors = new LinkedHashMap<>();
+        Map<String, Set<String>> termsByDocumentCode = indexedCorpus.termsByDocumentCode();
+
+        for (int i = 0; i < model.documentCodes().size(); i++) {
+            String code = model.documentCodes().get(i);
+            String title = indexedCorpus.titlesByCode().getOrDefault(code, code);
+
+            documentVectors.put(
+                    code,
+                    new RankingService.DocumentVector(code, title, model.documentVectors()[i])
+            );
+            documentTerms.put(
+                    code,
+                    new RankingService.DocumentTerms(
+                            code,
+                            title,
+                            termsByDocumentCode.getOrDefault(code, Set.of())
+                    )
+            );
+        }
+
+        for (int i = 0; i < model.terms().size(); i++) {
+            termVectors.put(model.terms().get(i), model.termVectors()[i]);
+        }
+
+        return new FixtureData(documentVectors, documentTerms, termVectors);
     }
 
     private Map<String, RankingService.DocumentVector> loadDocumentVectors() throws IOException {
@@ -239,15 +299,11 @@ public class QueryProcessor {
             return terms;
         }
 
-        String normalized = text
-                .toLowerCase(Locale.ROOT)
-                .replaceAll("[^a-z0-9_ ]", " ");
+        List<String> tokens = preprocessingPipeline.process(text);
+        List<String> canonicalTerms = semanticPipeline.process(tokens);
 
-        String[] parts = normalized.split("\\s+");
-
-        for (String part : parts) {
+        for (String part : canonicalTerms) {
             String term = normalize(part);
-
             if (!term.isBlank()) {
                 terms.add(term);
             }
@@ -307,3 +363,4 @@ public class QueryProcessor {
     ) {
     }
 }
+

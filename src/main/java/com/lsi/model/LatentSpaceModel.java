@@ -15,7 +15,7 @@ public record LatentSpaceModel(
 
         double[] singularValues,
 
-        // Metadata útil para inspección y consultas
+        // Metadata Ãºtil para inspecciÃ³n y consultas
         List<String> documentCodes,
 
         List<String> terms
@@ -129,3 +129,4 @@ public record LatentSpaceModel(
                 return copy;
         }
 }
+

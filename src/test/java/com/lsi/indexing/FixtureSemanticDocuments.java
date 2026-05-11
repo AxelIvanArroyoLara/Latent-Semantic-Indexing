@@ -47,7 +47,7 @@ public class FixtureSemanticDocuments {
             "tecnicas", "respiracion", "autorregulacion", "emocional", "estudiante", "universidad", "relajacion", "mindfulness"
         ), Map.of()));
 
-        // Añadimos un par más basados en los archivos subidos (COVID, bienestar europeo, etc.)
+        // AÃ±adimos un par mÃ¡s basados en los archivos subidos (COVID, bienestar europeo, etc.)
         docs.add(new SemanticDocument("D11", Arrays.asList(
             "covid", "pandemia", "salud", "mental", "estudiante", "universidad", "confinamiento", "ansiedad", "depresion"
         ), Map.of()));

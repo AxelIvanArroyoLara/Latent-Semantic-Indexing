@@ -1,8 +1,9 @@
 package com.lsi.model;
 
 /*
- * Aquí va la representación de un resultado de consulta:
- * documento recuperado, score y posición en el ranking.
+ * AquÃ­ va la representaciÃ³n de un resultado de consulta:
+ * documento recuperado, score y posiciÃ³n en el ranking.
  */
 public class QueryResult {
 }
+

@@ -1,7 +1,8 @@
 package com.lsi.model;
 
 /*
- * Aquí va la relación entre documento y término para representar la frecuencia de aparición en FrecT.
+ * AquÃ­ va la relaciÃ³n entre documento y tÃ©rmino para representar la frecuencia de apariciÃ³n en FrecT.
  */
 public class DocumentTermFrequency {
 }
+

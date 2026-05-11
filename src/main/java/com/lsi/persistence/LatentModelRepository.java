@@ -7,3 +7,4 @@ public interface LatentModelRepository {
     void save(LatentSpaceModel model);
     Optional<LatentSpaceModel> loadLatest();
 }
+

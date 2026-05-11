@@ -1,7 +1,8 @@
 package com.lsi.lsi;
 
 /*
- * AquÌ va la lÛgica que permitir· al usuario experto decidir tÈrminos significativos a conservar.
+ * Aqu√≠ va la l√≥gica que permitir√° al usuario experto decidir t√©rminos significativos a conservar.
  */
 public class TermSelectionService {
 }
+

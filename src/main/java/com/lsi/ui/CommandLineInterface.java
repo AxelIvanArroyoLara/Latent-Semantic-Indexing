@@ -1,5 +1,10 @@
 package com.lsi.ui;
 
+import com.lsi.config.AppConfig;
+import com.lsi.indexing.IndexingService;
+import com.lsi.model.FrequencyMatrix;
+import com.lsi.model.LatentSpaceModel;
+import com.lsi.persistence.FileLatentModelRepository;
 import com.lsi.query.DocumentSimilarityService;
 import com.lsi.query.QueryProcessor;
 import com.lsi.query.RankingService;
@@ -10,13 +15,20 @@ import java.util.Map;
 public class CommandLineInterface {
 
     private final QueryProcessor queryProcessor;
+    private final IndexingService indexingService;
 
     public CommandLineInterface() {
-        this(new QueryProcessor());
+        this(new IndexingService());
     }
 
     public CommandLineInterface(QueryProcessor queryProcessor) {
         this.queryProcessor = queryProcessor;
+        this.indexingService = new IndexingService();
+    }
+
+    public CommandLineInterface(IndexingService indexingService) {
+        this.indexingService = indexingService;
+        this.queryProcessor = new QueryProcessor(indexingService.indexQueryFixtures());
     }
 
     public static void main(String[] args) {
@@ -45,6 +57,10 @@ public class CommandLineInterface {
                 return runQuery(options);
             }
 
+            if ("demo-pipeline".equalsIgnoreCase(command)) {
+                return runDemoPipeline(options);
+            }
+
             System.out.println("Unknown command: " + command);
             printHelp();
             return 1;
@@ -69,6 +85,37 @@ public class CommandLineInterface {
         System.out.printf("Euclidean distance: %.4f%n", result.euclidean());
         System.out.println();
         System.out.println("Note: higher cosine/Jaccard means more similar; lower Euclidean means closer.");
+
+        return 0;
+    }
+
+    private int runDemoPipeline(Map<String, String> options) {
+        int dimensions = Integer.parseInt(
+                options.getOrDefault("k", String.valueOf(AppConfig.DEFAULT_LSI_DIMENSIONS))
+        );
+
+        IndexingService.IndexedCorpus corpus = indexingService.indexQueryFixtures(
+                AppConfig.QUERY_FIXTURE_DIR,
+                dimensions
+        );
+        FrequencyMatrix matrix = corpus.frequencyMatrix();
+        LatentSpaceModel model = corpus.latentSpaceModel();
+
+        if (Boolean.parseBoolean(options.getOrDefault("save-model", "false"))) {
+            new FileLatentModelRepository(AppConfig.DEFAULT_MODEL_FILE.toString())
+                    .save(model);
+        }
+
+        System.out.println("=== Integrated LSI pipeline ===");
+        System.out.println("Documents indexed: " + corpus.semanticDocuments().size());
+        System.out.println("Vocabulary terms: " + matrix.terms().size());
+        System.out.println("Frequency matrix: " + matrix.values().length + "x" + matrix.documentCodes().size());
+        System.out.println("LSI dimensions: " + model.k());
+        System.out.println("Document vectors: " + model.documentVectors().length);
+
+        if (Boolean.parseBoolean(options.getOrDefault("save-model", "false"))) {
+            System.out.println("Model saved to: " + AppConfig.DEFAULT_MODEL_FILE);
+        }
 
         return 0;
     }
@@ -146,6 +193,7 @@ public class CommandLineInterface {
         System.out.println();
         System.out.println("Commands:");
         System.out.println("  compare-docs --d1 D1 --d2 D3");
+        System.out.println("  demo-pipeline --k 3 --save-model true");
         System.out.println("  query --text \"academic stress anxiety\" --top 5 --metric cosine");
         System.out.println("  query --text \"sleep wellbeing\" --top 3 --metric jaccard");
         System.out.println("  query --text \"academic stress\" --top 3 --metric euclidean");
@@ -156,3 +204,4 @@ public class CommandLineInterface {
         System.out.println("  euclidean");
     }
 }
+
