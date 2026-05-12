@@ -8,6 +8,7 @@ import com.lsi.model.LatentSpaceModel;
 import com.lsi.model.SemanticDocument;
 import com.lsi.preprocessing.PreprocessingPipeline;
 import com.lsi.semantic.SemanticPipeline;
+import com.lsi.persistence.DocumentRepository;
 
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
@@ -37,6 +38,7 @@ public class IndexingService {
     private final SemanticPipeline semanticPipeline;
     private final FrequencyMatrixBuilder frequencyMatrixBuilder;
     private final LsiReducer lsiReducer;
+    private final DocumentRepository documentRepository = new DocumentRepository();
 
     public IndexingService() {
         this(
@@ -100,6 +102,37 @@ public class IndexingService {
 
     public IndexedCorpus indexQueryFixtures() {
         return indexQueryFixtures(AppConfig.QUERY_FIXTURE_DIR, AppConfig.DEFAULT_LSI_DIMENSIONS);
+    }
+
+    public IndexedCorpus indexQueryFixtures(int dimensions) {
+        return indexQueryFixtures(AppConfig.QUERY_FIXTURE_DIR, dimensions);
+    }
+
+    public IndexedCorpus indexFromDatabase(int dimensions) {
+        return index(loadDocumentsFromDatabase(), dimensions, true);
+    }
+
+    public List<Document> loadDocumentsFromDatabase() {
+        List<DocumentRepository.DocumentRow> rows = documentRepository.findAll();
+        List<Document> documents = new ArrayList<>();
+
+        for (DocumentRepository.DocumentRow row : rows) {
+            String normalizedText = row.normalizedText();
+
+            if (normalizedText == null || normalizedText.isBlank()) {
+                normalizedText = row.rawText();
+            }
+
+            documents.add(new Document(
+                    row.code(),
+                    row.title(),
+                    row.source(),
+                    row.rawText(),
+                    normalizedText
+            ));
+        }
+
+        return documents;
     }
 
     public IndexedCorpus indexQueryFixtures(Path fixtureDir, int dimensions) {
