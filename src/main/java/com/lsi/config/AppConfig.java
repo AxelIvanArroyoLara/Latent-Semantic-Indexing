@@ -12,6 +12,7 @@ public final class AppConfig {
     public static final String DEFAULT_METRIC = "cosine";
 
     public static final Path QUERY_FIXTURE_DIR = Path.of("data", "fixtures", "query");
+    public static final Path RAW_DOCUMENT_DIR = Path.of("data", "raw");
     public static final Path DEFAULT_MODEL_FILE = Path.of("target", "lsi-model.bin");
 
     private AppConfig() {

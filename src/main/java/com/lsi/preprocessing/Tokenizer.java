@@ -15,6 +15,8 @@ public class Tokenizer {
 
         return Arrays.stream(normalizedText.split("\\s+"))
                 .filter(token -> !token.isBlank())
+                .filter(token -> token.length() > 1)
+                .filter(token -> !token.matches("\\d+"))
                 .toList();
     }
 }

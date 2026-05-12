@@ -35,7 +35,7 @@ mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=query --text \"academi
 
 The system provides:
 
-- a controlled corpus of 10 documents in `data/fixtures/query/document_terms.csv`;
+- a real PDF corpus loaded from `data/raw/*.pdf`;
 - preprocessing with normalization, tokenization, stop-word filtering, and suffix-based stemming;
 - semantic normalization with synonyms and polysemy/domain phrase rules;
 - FrecT construction with TF-IDF weighting;
@@ -104,8 +104,8 @@ The project uses Flyway migrations and separated SQL scripts. It does not use co
 | Path | Purpose |
 | --- | --- |
 | `sql/migrations/` | Flyway migrations that create schema and seed official linguistic resources. |
-| `sql/demo/insert_demo_data.sql` | Manual demo data loader with 10 documents and persisted query evidence. |
-| `sql/queries/` | Manual verification queries for document counts, FrecT, LSI vectors, query logs, and final project query requirements. |
+| `sql/demo/insert_demo_data.sql` | Legacy manual seed script kept for SQL-only experiments; it is not the source used by `main`. |
+| `sql/queries/` | Manual verification queries for document counts, FrecT, LSI vectors, query logs, and final project query requirements after runtime persistence. |
 
 Core tables:
 
@@ -127,12 +127,6 @@ Load migrations:
 
 ```powershell
 mvn flyway:migrate
-```
-
-Load demo data:
-
-```powershell
-psql -U postgres -h localhost -p 5433 -d lsi_documentbase -f sql/demo/insert_demo_data.sql
 ```
 
 Run final SQL verification:
@@ -164,9 +158,9 @@ mvn flyway:migrate "-Dflyway.password=your_password_here"
 
 The CLI builds the corpus and query results first, then attempts to persist them through `CorpusPersistenceService` and `QueryResultPersistenceService`.
 
-If PostgreSQL is available and `sql/demo/insert_demo_data.sql` has been loaded, the flow stores:
+If PostgreSQL is available and `main` or `final-demo` is executed, the flow stores:
 
-- the 10-document corpus in `documents`;
+- the extracted PDF corpus in `documents`;
 - vocabulary rows in `terms`;
 - FrecT rows in `document_terms`;
 - LSI document vector components in `latent_document_vectors`;
@@ -178,7 +172,9 @@ If PostgreSQL is unavailable, the CLI prints a clear persistence warning and con
 
 ## Corpus Scope
 
-The raw PDFs under `data/raw/` are source references. The executable final demo uses `data/fixtures/query/document_terms.csv` as the controlled 10-document corpus so that the professor sees the same reproducible FrecT, SVD/LSI, and query outputs on every run. The system should therefore be defended as a controlled corpus pipeline, not as automatic PDF extraction.
+The executable final demo extracts text directly from the PDFs under `data/raw/`. CSV fixtures remain only as legacy/unit-test support; they are not the document base used by `main`, `final-demo`, `demo-pipeline`, `inspect-lsi`, `compare-docs`, `query`, or `select-terms`.
+
+The final demo first builds an initial LSI model from the full extracted PDF corpus, ranks significant terms, applies the expert-selected terms, rebuilds FrecT/LSI with only those terms, and executes the query examples against that filtered active index.
 
 ## Documentation
 

@@ -16,7 +16,7 @@ mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=select-terms --terms d
 
 Expected behavior:
 
-- loads the same controlled 10-document corpus;
+- loads the same extracted PDF corpus used by `main`;
 - ranks terms by LSI significance;
 - keeps the explicitly requested expert terms if they exist in the vocabulary;
 - persists the selected terms in `selected_index_terms` when PostgreSQL is available.
@@ -79,13 +79,7 @@ Expected behavior:
 
 ## SQL Verification
 
-Load the relational demo data:
-
-```powershell
-psql -U postgres -h localhost -p 5433 -d lsi_documentbase -f sql/demo/insert_demo_data.sql
-```
-
-Then run:
+After running `main` with PostgreSQL available, run:
 
 ```powershell
 psql -U postgres -h localhost -p 5433 -d lsi_documentbase -f sql/queries/11_compare_documents_similarity.sql

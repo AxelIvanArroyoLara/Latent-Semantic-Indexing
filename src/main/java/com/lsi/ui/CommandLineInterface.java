@@ -23,6 +23,24 @@ import java.util.stream.Collectors;
 
 public class CommandLineInterface {
 
+    private static final List<String> DEFAULT_EXPERT_TERM_PREFERENCES = List.of(
+            "student",
+            "mental_health",
+            "anxiety",
+            "depression",
+            "stress",
+            "well",
+            "wellbe",
+            "academic",
+            "support",
+            "counseling",
+            "sleep",
+            "social_media",
+            "health",
+            "campu",
+            "college"
+    );
+
     private QueryProcessor queryProcessor;
     private final IndexingService indexingService;
     private final TermSelectionService termSelectionService;
@@ -40,7 +58,7 @@ public class CommandLineInterface {
 
     public CommandLineInterface(IndexingService indexingService) {
         this.indexingService = indexingService;
-        this.queryProcessor = new QueryProcessor(indexingService.indexQueryFixtures());
+        this.queryProcessor = new QueryProcessor(indexingService.indexRawPdfDocuments(AppConfig.RAW_DOCUMENT_DIR, AppConfig.DEFAULT_LSI_DIMENSIONS));
         this.termSelectionService = new TermSelectionService();
     }
 
@@ -126,31 +144,41 @@ public class CommandLineInterface {
         int topDocuments = Integer.parseInt(options.getOrDefault("top", "5"));
         boolean fullMatrix = "full".equalsIgnoreCase(options.getOrDefault("matrix", "preview"));
 
-        IndexingService.IndexedCorpus corpus = indexingService.indexQueryFixtures(
-                AppConfig.QUERY_FIXTURE_DIR,
+        IndexingService.IndexedCorpus sourceCorpus = indexingService.indexRawPdfDocuments(
+                AppConfig.RAW_DOCUMENT_DIR,
+                dimensions
+        );
+        LatentSpaceModel sourceModel = sourceCorpus.latentSpaceModel();
+        List<TermSelectionService.SelectedTerm> expertTerms =
+                resolveExpertTerms(sourceModel, topTerms, options.get("expert-terms"));
+        IndexingService.IndexedCorpus corpus = indexingService.filterToSelectedTerms(
+                sourceCorpus,
+                expertTerms.stream().map(TermSelectionService.SelectedTerm::term).toList(),
                 dimensions
         );
         QueryProcessor processor = new QueryProcessor(corpus);
         FrequencyMatrix matrix = corpus.frequencyMatrix();
         LatentSpaceModel model = corpus.latentSpaceModel();
-        List<TermSelectionService.SelectedTerm> expertTerms =
-                resolveExpertTerms(model, topTerms, options.get("expert-terms"));
 
         printSection("FINAL PROJECT TECHNICAL DEMONSTRATION");
         System.out.println("Demonstrated objective: document base with LSI to index, represent, and query documents.");
         System.out.println("Corpus domain: mental health and wellbeing among university students.");
-        System.out.println("Flow: documents -> preprocessing -> semantics -> FrecT -> SVD/LSI -> queries.");
+        System.out.println("Flow: PDFs -> text extraction -> preprocessing -> semantics -> SVD term selection -> filtered FrecT/LSI -> queries.");
 
         printSection("STEP 1. DOCUMENT BASE");
         System.out.println("Requirement: work with a base of at least 10 documents.");
-        System.out.println("Indexed documents: " + corpus.semanticDocuments().size());
-        for (SemanticDocument document : corpus.semanticDocuments()) {
-            String title = corpus.titlesByCode().getOrDefault(document.code(), document.code());
+        System.out.println("Source directory: " + AppConfig.RAW_DOCUMENT_DIR);
+        System.out.println("Extracted PDF documents: " + sourceCorpus.semanticDocuments().size());
+        for (SemanticDocument document : sourceCorpus.semanticDocuments()) {
+            String title = sourceCorpus.titlesByCode().getOrDefault(document.code(), document.code());
+            String source = String.valueOf(document.metadata().getOrDefault("source", ""));
+            List<String> previewTerms = document.canonicalTerms().stream().limit(14).toList();
             System.out.printf(
-                    "%s - %s%n    Canonical terms: %s%n",
+                    "%s - %s%n    Source PDF: %s%n    Canonical term preview: %s%n",
                     document.code(),
                     title,
-                    document.canonicalTerms()
+                    source,
+                    previewTerms
             );
         }
 
@@ -168,6 +196,7 @@ public class CommandLineInterface {
 
         printSection("STEP 3. FREQUENCY MATRIX FrecT");
         System.out.println("Requirement: build the FrecT matrix generated from the document base.");
+        System.out.println("This FrecT is rebuilt after expert term selection, so only selected indexing terms remain.");
         System.out.println("FrecT dimensions: " + matrix.values().length + " terms x " + matrix.documentCodes().size() + " documents.");
         if (fullMatrix) {
             printFrequencyMatrix(matrix);
@@ -179,13 +208,15 @@ public class CommandLineInterface {
         printSection("STEP 4. SVD / LSI REDUCTION");
         System.out.println("Requirement: apply SVD and allow significant terms to be selected.");
         System.out.println("Requested k: " + dimensions);
-        System.out.println("Actual k used by LSI: " + model.k());
-        System.out.println("Singular values:");
-        for (int i = 0; i < model.singularValues().length; i++) {
-            System.out.printf("  sigma_%d = %.4f%n", i + 1, model.singularValues()[i]);
+        System.out.println("Initial PDF-corpus k used before term filtering: " + sourceModel.k());
+        System.out.println("Active filtered-index k used after expert selection: " + model.k());
+        System.out.println("Initial singular values used to rank significant terms:");
+        for (int i = 0; i < sourceModel.singularValues().length; i++) {
+            System.out.printf("  sigma_%d = %.4f%n", i + 1, sourceModel.singularValues()[i]);
         }
-        printSelectedTerms(model, topTerms);
+        printSelectedTerms(sourceModel, topTerms);
         printExpertTerms(expertTerms);
+        System.out.println("Active indexing vocabulary after expert filtering: " + model.terms());
         persistIndexedCorpus(corpus, expertTerms);
 
         printSection("STEP 5. QUERY 1 - SIMILARITY BETWEEN TWO DOCUMENTS");
@@ -196,18 +227,21 @@ public class CommandLineInterface {
         printSection("STEP 6. QUERY 2 - RETRIEVE TOP-N WITH SIMILARITY FUNCTIONS");
         System.out.println("Requested question: given a query Q, retrieve the n most relevant documents.");
         System.out.println("Similarity function 1: cosine.");
-        QueryProcessor.QueryRun cosineRun = processor.query("academic stress anxiety", topDocuments, "cosine");
+        String cosineQuery = queryTextFromExpertTerms(expertTerms, 0, 3);
+        QueryProcessor.QueryRun cosineRun = processor.query(cosineQuery, topDocuments, "cosine");
         printQueryRun(cosineRun);
         persistQueryRun(cosineRun);
         System.out.println();
         System.out.println("Similarity function 2: Jaccard.");
-        QueryProcessor.QueryRun jaccardRun = processor.query("sleep wellbeing", topDocuments, "jaccard");
+        String jaccardQuery = queryTextFromExpertTerms(expertTerms, 3, 3);
+        QueryProcessor.QueryRun jaccardRun = processor.query(jaccardQuery, topDocuments, "jaccard");
         printQueryRun(jaccardRun);
         persistQueryRun(jaccardRun);
 
         printSection("STEP 7. QUERY 3 - RETRIEVE TOP-N WITH A DISSIMILARITY FUNCTION");
         System.out.println("Dissimilarity function: Euclidean distance.");
-        QueryProcessor.QueryRun euclideanRun = processor.query("academic stress", topDocuments, "euclidean");
+        String euclideanQuery = queryTextFromExpertTerms(expertTerms, 0, 2);
+        QueryProcessor.QueryRun euclideanRun = processor.query(euclideanQuery, topDocuments, "euclidean");
         printQueryRun(euclideanRun);
         persistQueryRun(euclideanRun);
 
@@ -229,18 +263,48 @@ public class CommandLineInterface {
         int topTerms = Integer.parseInt(options.getOrDefault("top", "10"));
         String explicitTerms = options.get("terms");
 
-        IndexingService.IndexedCorpus corpus = indexingService.indexQueryFixtures(
-                AppConfig.QUERY_FIXTURE_DIR,
+        IndexingService.IndexedCorpus sourceCorpus = indexingService.indexRawPdfDocuments(
+                AppConfig.RAW_DOCUMENT_DIR,
                 dimensions
         );
         List<TermSelectionService.SelectedTerm> expertTerms =
-                resolveExpertTerms(corpus.latentSpaceModel(), topTerms, explicitTerms);
+                resolveExpertTerms(sourceCorpus.latentSpaceModel(), topTerms, explicitTerms);
+        IndexingService.IndexedCorpus corpus = indexingService.filterToSelectedTerms(
+                sourceCorpus,
+                expertTerms.stream().map(TermSelectionService.SelectedTerm::term).toList(),
+                dimensions
+        );
 
         printSection("EXPERT INDEXING TERM SELECTION");
         printExpertTerms(expertTerms);
+        System.out.println("Active indexing vocabulary after expert filtering: " + corpus.latentSpaceModel().terms());
         persistIndexedCorpus(corpus, expertTerms);
 
         return 0;
+    }
+
+    private String queryTextFromExpertTerms(
+            List<TermSelectionService.SelectedTerm> expertTerms,
+            int start,
+            int count
+    ) {
+        if (expertTerms.isEmpty()) {
+            return "";
+        }
+
+        int safeStart = Math.min(start, Math.max(0, expertTerms.size() - 1));
+        int safeEnd = Math.min(expertTerms.size(), safeStart + count);
+
+        if (safeStart >= safeEnd) {
+            safeStart = 0;
+            safeEnd = Math.min(expertTerms.size(), count);
+        }
+
+        return expertTerms.subList(safeStart, safeEnd)
+                .stream()
+                .map(TermSelectionService.SelectedTerm::term)
+                .map(term -> term.replace('_', ' '))
+                .collect(Collectors.joining(" "));
     }
 
     private List<TermSelectionService.SelectedTerm> resolveExpertTerms(
@@ -252,9 +316,31 @@ public class CommandLineInterface {
                 termSelectionService.selectTopTerms(model, Math.max(topTerms, model.terms().size()));
 
         if (explicitTerms == null || explicitTerms.isBlank()) {
-            return rankedTerms.stream()
-                    .limit(topTerms)
-                    .toList();
+            List<TermSelectionService.SelectedTerm> selectedTerms = new ArrayList<>();
+
+            for (String preferredTerm : DEFAULT_EXPERT_TERM_PREFERENCES) {
+                rankedTerms.stream()
+                        .filter(term -> term.term().equalsIgnoreCase(preferredTerm))
+                        .findFirst()
+                        .filter(term -> !selectedTerms.contains(term))
+                        .ifPresent(selectedTerms::add);
+
+                if (selectedTerms.size() == topTerms) {
+                    return selectedTerms;
+                }
+            }
+
+            for (TermSelectionService.SelectedTerm rankedTerm : rankedTerms) {
+                if (!selectedTerms.contains(rankedTerm)) {
+                    selectedTerms.add(rankedTerm);
+                }
+
+                if (selectedTerms.size() == topTerms) {
+                    break;
+                }
+            }
+
+            return selectedTerms;
         }
 
         Set<String> requestedTerms = List.of(explicitTerms.split(","))
@@ -314,7 +400,7 @@ public class CommandLineInterface {
         } catch (RuntimeException e) {
             System.out.println(
                     "Corpus persistence not completed: PostgreSQL is unavailable or migrations are not applied. "
-                            + "Run Flyway and sql/demo/insert_demo_data.sql, then execute again."
+                            + "Run Flyway, make sure PostgreSQL is available, then execute the PDF demo again."
             );
         }
     }
@@ -331,8 +417,8 @@ public class CommandLineInterface {
             );
         } catch (RuntimeException e) {
             System.out.println(
-                    "Persistence not completed: PostgreSQL is unavailable or the demo data is not loaded. "
-                            + "Run Flyway and sql/demo/insert_demo_data.sql, then execute again."
+                    "Persistence not completed: PostgreSQL is unavailable or migrations are not applied. "
+                            + "Run Flyway, make sure PostgreSQL is available, then execute the PDF demo again."
             );
         }
     }
@@ -427,8 +513,8 @@ public class CommandLineInterface {
                 options.getOrDefault("k", String.valueOf(AppConfig.DEFAULT_LSI_DIMENSIONS))
         );
 
-        IndexingService.IndexedCorpus corpus = indexingService.indexQueryFixtures(
-                AppConfig.QUERY_FIXTURE_DIR,
+        IndexingService.IndexedCorpus corpus = indexingService.indexRawPdfDocuments(
+                AppConfig.RAW_DOCUMENT_DIR,
                 dimensions
         );
         FrequencyMatrix matrix = corpus.frequencyMatrix();
@@ -460,8 +546,8 @@ public class CommandLineInterface {
         );
         int topTerms = Integer.parseInt(options.getOrDefault("terms", "10"));
 
-        LatentSpaceModel model = indexingService.indexQueryFixtures(
-                AppConfig.QUERY_FIXTURE_DIR,
+        LatentSpaceModel model = indexingService.indexRawPdfDocuments(
+                AppConfig.RAW_DOCUMENT_DIR,
                 dimensions
         ).latentSpaceModel();
 
@@ -562,7 +648,10 @@ public class CommandLineInterface {
 
     private QueryProcessor queryProcessor() {
         if (queryProcessor == null) {
-            queryProcessor = new QueryProcessor(indexingService.indexQueryFixtures());
+            queryProcessor = new QueryProcessor(indexingService.indexRawPdfDocuments(
+                    AppConfig.RAW_DOCUMENT_DIR,
+                    AppConfig.DEFAULT_LSI_DIMENSIONS
+            ));
         }
 
         return queryProcessor;

@@ -9,16 +9,23 @@ import com.lsi.model.SemanticDocument;
 import com.lsi.preprocessing.PreprocessingPipeline;
 import com.lsi.semantic.SemanticPipeline;
 
+import org.apache.pdfbox.Loader;
+import org.apache.pdfbox.pdmodel.PDDocument;
+import org.apache.pdfbox.text.PDFTextStripper;
+
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Coordinates preprocessing, semantic normalization, frequency matrix creation,
@@ -75,7 +82,12 @@ public class IndexingService {
             semanticDocuments.add(new SemanticDocument(
                     document.code(),
                     canonicalTerms,
-                    Map.of("title", document.title(), "source", document.source())
+                    Map.of(
+                            "title", document.title(),
+                            "source", document.source(),
+                            "rawText", document.rawText(),
+                            "normalizedText", document.textForProcessing()
+                    )
             ));
             titlesByCode.put(document.code(), document.title());
         }
@@ -92,6 +104,49 @@ public class IndexingService {
 
     public IndexedCorpus indexQueryFixtures(Path fixtureDir, int dimensions) {
         return index(loadDocumentsFromQueryFixture(fixtureDir), dimensions, true);
+    }
+
+    public IndexedCorpus indexRawPdfDocuments(Path rawDocumentDir, int dimensions) {
+        return index(loadDocumentsFromRawPdfs(rawDocumentDir), dimensions, true);
+    }
+
+    public IndexedCorpus filterToSelectedTerms(
+            IndexedCorpus source,
+            Collection<String> selectedTerms,
+            int dimensions
+    ) {
+        if (source == null) {
+            throw new IllegalArgumentException("Source corpus cannot be null");
+        }
+
+        if (selectedTerms == null || selectedTerms.isEmpty()) {
+            throw new IllegalArgumentException("Selected terms cannot be empty");
+        }
+
+        Set<String> allowedTerms = selectedTerms.stream()
+                .filter(term -> term != null && !term.isBlank())
+                .map(term -> term.trim().toLowerCase(Locale.ROOT))
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        List<SemanticDocument> filteredDocuments = new ArrayList<>();
+
+        for (SemanticDocument document : source.semanticDocuments()) {
+            List<String> filteredTerms = document.canonicalTerms()
+                    .stream()
+                    .filter(allowedTerms::contains)
+                    .toList();
+
+            filteredDocuments.add(new SemanticDocument(
+                    document.code(),
+                    filteredTerms,
+                    document.metadata()
+            ));
+        }
+
+        FrequencyMatrix frequencyMatrix = frequencyMatrixBuilder.build(filteredDocuments, true);
+        LatentSpaceModel model = lsiReducer.reduce(frequencyMatrix, dimensions);
+
+        return new IndexedCorpus(filteredDocuments, frequencyMatrix, model, source.titlesByCode());
     }
 
     public List<Document> loadDocumentsFromQueryFixture(Path fixtureDir) {
@@ -127,6 +182,91 @@ public class IndexingService {
         } catch (IOException e) {
             throw new IllegalStateException("Could not load query fixture documents from " + path, e);
         }
+    }
+
+    public List<Document> loadDocumentsFromRawPdfs(Path rawDocumentDir) {
+        try {
+            List<Path> pdfs = Files.list(rawDocumentDir)
+                    .filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".pdf"))
+                    .sorted()
+                    .toList();
+
+            if (pdfs.size() < 10) {
+                throw new IllegalStateException(
+                        "At least 10 PDF documents are required in " + rawDocumentDir
+                                + ". Found: " + pdfs.size()
+                );
+            }
+
+            List<Document> documents = new ArrayList<>();
+            int index = 1;
+
+            for (Path pdf : pdfs) {
+                ExtractedPdf extractedPdf = extractPdf(pdf);
+
+                if (extractedPdf.text().isBlank()) {
+                    continue;
+                }
+
+                documents.add(new Document(
+                        "D" + index,
+                        extractedPdf.title(),
+                        pdf.toString(),
+                        extractedPdf.text(),
+                        extractedPdf.text()
+                ));
+                index++;
+            }
+
+            if (documents.size() < 10) {
+                throw new IllegalStateException(
+                        "At least 10 PDF documents with extractable text are required in "
+                                + rawDocumentDir
+                                + ". Extracted: "
+                                + documents.size()
+                );
+            }
+
+            return documents;
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not load PDF documents from " + rawDocumentDir, e);
+        }
+    }
+
+    private ExtractedPdf extractPdf(Path pdf) {
+        try (PDDocument document = Loader.loadPDF(pdf.toFile())) {
+            PDFTextStripper stripper = new PDFTextStripper();
+            String text = stripper.getText(document);
+            String metadataTitle = document.getDocumentInformation() == null
+                    ? ""
+                    : document.getDocumentInformation().getTitle();
+            String title = metadataTitle == null || metadataTitle.isBlank()
+                    ? titleFromFileName(pdf)
+                    : metadataTitle.trim();
+
+            return new ExtractedPdf(title, text == null ? "" : text);
+        } catch (IOException e) {
+            throw new IllegalStateException("Could not extract text from PDF: " + pdf, e);
+        }
+    }
+
+    private String titleFromFileName(Path pdf) {
+        String fileName = pdf.getFileName().toString();
+        int extensionIndex = fileName.toLowerCase(Locale.ROOT).lastIndexOf(".pdf");
+
+        if (extensionIndex > 0) {
+            fileName = fileName.substring(0, extensionIndex);
+        }
+
+        return fileName
+                .replace('-', ' ')
+                .replace('_', ' ')
+                .replaceAll("\\s+", " ")
+                .trim();
+    }
+
+    private record ExtractedPdf(String title, String text) {
     }
 
     public record IndexedCorpus(

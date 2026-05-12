@@ -72,7 +72,7 @@ public class CorpusPersistenceService {
             String title = corpus.titlesByCode().getOrDefault(document.code(), document.code());
             String rawText = String.join(" ", document.canonicalTerms());
             String source = String.valueOf(document.metadata()
-                    .getOrDefault("source", "data/fixtures/query/document_terms.csv"));
+                    .getOrDefault("source", "data/raw"));
 
             DocumentRepository.DocumentRow existing = documentRepository.findByCode(document.code())
                     .orElse(null);

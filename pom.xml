@@ -17,6 +17,7 @@
         <postgresql.version>42.7.4</postgresql.version>
         <hikari.version>5.1.0</hikari.version>
         <flyway.version>10.20.1</flyway.version>
+        <pdfbox.version>3.0.3</pdfbox.version>
         <junit.jupiter.version>5.11.3</junit.jupiter.version>
         <junit4.version>4.13.2</junit4.version>
         <maven.surefire.version>3.2.5</maven.surefire.version>
@@ -63,6 +64,12 @@
             <groupId>org.ejml</groupId>
             <artifactId>ejml-simple</artifactId>
             <version>0.41</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>${pdfbox.version}</version>
         </dependency>
     </dependencies>
 

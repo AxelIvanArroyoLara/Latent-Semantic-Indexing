@@ -16,7 +16,7 @@ These queries close the database-side requirements from the final project.
 Run after Flyway migrations and demo data:
 
 ```powershell
-psql -U postgres -h localhost -p 5433 -d lsi_documentbase -f sql/demo/insert_demo_data.sql
+Run `mvn exec:java "-Dexec.mainClass=com.lsi.App"` with PostgreSQL available so the extracted PDF corpus is persisted.
 psql -U postgres -h localhost -p 5433 -d lsi_documentbase -f sql/queries/11_compare_documents_similarity.sql
 psql -U postgres -h localhost -p 5433 -d lsi_documentbase -f sql/queries/12_rank_query_topn_cosine.sql
 psql -U postgres -h localhost -p 5433 -d lsi_documentbase -f sql/queries/13_rank_query_topn_jaccard.sql
