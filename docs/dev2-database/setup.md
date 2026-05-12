@@ -79,7 +79,7 @@ Ejemplo de configuración usada durante el desarrollo:
 ```properties
 db.url=jdbc:postgresql://localhost:5433/lsi_documentbase
 db.user=postgres
-db.password=Miami123
+db.password=
 ```
 
 Cada integrante debe ajustar estos valores según su instalación local.

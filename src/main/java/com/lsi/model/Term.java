@@ -1,8 +1,22 @@
 package com.lsi.model;
 
-/*
- * Aquí va la entidad de término con valor original, valor normalizado, stem y metadatos necesarios.
- */
-public class Term {
-}
+public record Term(
+        String normalizedTerm,
+        String canonicalTerm,
+        String stem,
+        String senseLabel
+) {
+    public Term {
+        if (normalizedTerm == null || normalizedTerm.isBlank()) {
+            throw new IllegalArgumentException("normalizedTerm cannot be blank");
+        }
 
+        if (canonicalTerm == null || canonicalTerm.isBlank()) {
+            throw new IllegalArgumentException("canonicalTerm cannot be blank");
+        }
+
+        if (stem == null) {
+            stem = "";
+        }
+    }
+}

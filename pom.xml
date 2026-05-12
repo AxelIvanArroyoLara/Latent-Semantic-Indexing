@@ -21,6 +21,9 @@
         <junit4.version>4.13.2</junit4.version>
         <maven.surefire.version>3.2.5</maven.surefire.version>
         <maven.jar.version>3.3.0</maven.jar.version>
+        <flyway.url>jdbc:postgresql://localhost:5433/lsi_documentbase</flyway.url>
+        <flyway.user>postgres</flyway.user>
+        <flyway.password></flyway.password>
     </properties>
 
     <dependencies>
@@ -90,9 +93,9 @@
                 <version>${flyway.version}</version>
 
                 <configuration>
-                    <url>jdbc:postgresql://localhost:5433/lsi_documentbase</url>
-                    <user>postgres</user>
-                    <password>Miami123</password>
+                    <url>${flyway.url}</url>
+                    <user>${flyway.user}</user>
+                    <password>${flyway.password}</password>
                     <locations>
                         <location>filesystem:sql/migrations</location>
                     </locations>

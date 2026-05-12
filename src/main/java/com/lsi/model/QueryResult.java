@@ -1,9 +1,22 @@
 package com.lsi.model;
 
-/*
- * Aquí va la representación de un resultado de consulta:
- * documento recuperado, score y posición en el ranking.
- */
-public class QueryResult {
-}
+public record QueryResult(
+        String documentCode,
+        String title,
+        int rankPosition,
+        double score
+) {
+    public QueryResult {
+        if (documentCode == null || documentCode.isBlank()) {
+            throw new IllegalArgumentException("documentCode cannot be blank");
+        }
 
+        if (title == null) {
+            title = "";
+        }
+
+        if (rankPosition <= 0) {
+            throw new IllegalArgumentException("rankPosition must be positive");
+        }
+    }
+}

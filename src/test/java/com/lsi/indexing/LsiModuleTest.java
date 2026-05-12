@@ -341,11 +341,11 @@ public class LsiModuleTest {
         assertNotNull(inspection);
 
         assertTrue(
-                inspection.contains("Valores singulares")
+                inspection.contains("Singular values")
         );
 
         assertTrue(
-                inspection.contains("Componente")
+                inspection.contains("Component")
         );
     }
 

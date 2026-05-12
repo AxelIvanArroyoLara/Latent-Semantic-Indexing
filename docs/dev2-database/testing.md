@@ -72,7 +72,7 @@ Ejemplo local usado durante el desarrollo:
 ```properties
 db.url=jdbc:postgresql://localhost:5433/lsi_documentbase
 db.user=postgres
-db.password=Miami123
+db.password=
 ```
 
 Importante: estos valores dependen de cada máquina.

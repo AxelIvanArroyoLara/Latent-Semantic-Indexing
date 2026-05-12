@@ -1,376 +1,208 @@
 # Latent Semantic Indexing Document Base
 
-Sistema de recuperación documental basado en **Latent Semantic Indexing (LSI)** para indexar, representar y consultar una base de documentos mediante técnicas de recuperación de información, reducción dimensional con **SVD**, y comparación por funciones de similitud y disimilitud.
+Document retrieval system based on Latent Semantic Indexing (LSI). It indexes a controlled document base, applies linguistic preprocessing and semantic normalization, builds a term-document frequency matrix (FrecT), reduces the representation with SVD, executes similarity/dissimilarity queries, and persists the corpus, FrecT rows, LSI evidence, selected indexing terms, and query results in PostgreSQL when the database is available.
 
-El proyecto fue estructurado para desarrollarse de forma **colaborativa entre 6 integrantes**, permitiendo que cada módulo se implemente de manera independiente y quede listo para su integración posterior.
+## Objective
 
----
+The project satisfies the final-project objective: create and manipulate a document base of at least 10 documents using indexing and querying techniques, with semantic handling through stop words, suffix/stemming rules, synonyms, and polysemy rules.
 
-## Objetivo
+The demonstrated corpus focuses on mental health and wellbeing among university students, a public-health and welfare domain.
 
-Construir un sistema capaz de:
+## Main Runtime
 
-- trabajar con una base de al menos 10 documentos;
-- preprocesar texto considerando listas de exclusión y reducción léxica;
-- construir una **matriz de frecuencias término-documento (FrecT)**;
-- almacenar la información en una **base de datos relacional**;
-- aplicar **Latent Semantic Indexing (LSI)** mediante **Single Value Decomposition (SVD)**;
-- permitir consultas de similitud entre documentos;
-- permitir consultas textuales para recuperar los **n documentos más relevantes**;
-- incorporar tratamiento semántico básico mediante **sinónimos** y **polisemia**.
+Run the complete final-project demonstration from `main`:
 
----
+```powershell
+mvn exec:java "-Dexec.mainClass=com.lsi.App"
+```
 
-## Alcance funcional
+Running with no arguments starts `com.lsi.App`, delegates to `CommandLineInterface`, and executes the guided final demo.
 
-El sistema contempla los siguientes bloques principales:
+Useful explicit commands:
 
-1. Carga documental  
-2. Preprocesamiento  
-3. Tratamiento semántico  
-4. Indexación clásica  
-5. Reducción LSI  
-6. Consultas y ranking  
-7. Persistencia SQL  
-8. Interfaz de uso  
-9. Pruebas e integración  
+```powershell
+mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=final-demo --k 3 --terms 10 --top 5 --matrix preview"
+mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=final-demo --k 3 --terms 10 --top 5 --matrix full"
+mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=final-demo --expert-terms depression,anxiety,social_media"
+mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=select-terms --terms depression,anxiety --k 3"
+mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=compare-docs --d1 D1 --d2 D3"
+mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=query --text \"academic stress anxiety\" --top 5 --metric cosine"
+mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=query --text \"sleep wellbeing\" --top 5 --metric jaccard"
+mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=query --text \"academic stress\" --top 5 --metric euclidean"
+```
 
----
+## Functional Coverage
 
-## Estructura del proyecto
+The system provides:
+
+- a controlled corpus of 10 documents in `data/fixtures/query/document_terms.csv`;
+- preprocessing with normalization, tokenization, stop-word filtering, and suffix-based stemming;
+- semantic normalization with synonyms and polysemy/domain phrase rules;
+- FrecT construction with TF-IDF weighting;
+- SVD/LSI reduction using EJML;
+- expert-oriented significant term selection;
+- document-document similarity with cosine, Jaccard, and Euclidean distance;
+- top-n retrieval for text queries with cosine and Jaccard similarity;
+- top-n retrieval with Euclidean distance as a dissimilarity function;
+- PostgreSQL schema, migrations, repositories, and SQL verification scripts;
+- corpus, FrecT, LSI model, expert-selected terms, query-run, and ranked-result persistence when PostgreSQL is available.
+
+## Project Structure
 
 ```text
 lsi/
 ├── data/
-│   ├── raw/
-│   └── processed/
+│   ├── fixtures/
+│   │   ├── query/
+│   │   └── semantics/
+│   ├── processed/
+│   └── raw/
 ├── docs/
+│   ├── architecture-overview.md
+│   ├── query-examples.md
+│   ├── final-sql-verification.md
+│   └── final-technical-report.docx
 ├── sql/
+│   ├── migrations/
+│   ├── queries/
+│   └── demo/
 ├── src/
 │   ├── main/
-│   │   ├── java/
-│   │   │   └── com/
-│   │   │       └── lsi/
-│   │   │           ├── App.java
-│   │   │           ├── config/
-│   │   │           ├── model/
-│   │   │           ├── preprocessing/
-│   │   │           ├── semantic/
-│   │   │           ├── indexing/
-│   │   │           ├── lsi/
-│   │   │           ├── query/
-│   │   │           ├── persistence/
-│   │   │           └── ui/
+│   │   ├── java/com/lsi/
+│   │   │   ├── config/
+│   │   │   ├── indexing/
+│   │   │   ├── lsi/
+│   │   │   ├── model/
+│   │   │   ├── persistence/
+│   │   │   ├── preprocessing/
+│   │   │   ├── query/
+│   │   │   ├── semantic/
+│   │   │   └── ui/
 │   │   └── resources/
-│   │       ├── application.properties
-│   │       ├── stopwords.txt
-│   │       ├── suffixes.txt
-│   │       ├── synonyms.csv
-│   │       └── polysemy_rules.csv
 │   └── test/
-│       └── java/
-│           └── com/
-│               └── lsi/
-│                   ├── preprocessing/
-│                   ├── semantic/
-│                   ├── indexing/
-│                   ├── lsi/
-│                   ├── query/
-│                   └── persistence/
-├── pom.xml
-└── README.md
+└── pom.xml
 ```
 
----
+## Modules
 
-## Descripción de carpetas
+| Module | Responsibility |
+| --- | --- |
+| `config` | Application and PostgreSQL configuration. |
+| `model` | Domain objects for documents, FrecT, LSI, and query results. |
+| `preprocessing` | Text normalization, tokenization, stop words, and stemming. |
+| `semantic` | Synonym normalization and polysemy/domain phrase resolution. |
+| `indexing` | Document loading, semantic document creation, vocabulary, and FrecT. |
+| `lsi` | SVD reduction, latent vectors, and significant term inspection. |
+| `query` | Similarity, dissimilarity, top-n ranking, and query processing. |
+| `persistence` | PostgreSQL repositories and query result persistence. |
+| `ui` | CLI orchestration and final demonstration output. |
 
-### `data/`
-Contiene los insumos documentales del sistema.
+## SQL and PostgreSQL
 
-- `raw/`: documentos originales sin procesar.
-- `processed/`: documentos resultantes del pipeline de preprocesamiento.
+The project uses Flyway migrations and separated SQL scripts. It does not use consolidated `schema.sql`, `seed.sql`, or `queries.sql` files.
 
-### `docs/`
-Documentación técnica, arquitectura, flujo de trabajo del equipo y notas de integración.
+| Path | Purpose |
+| --- | --- |
+| `sql/migrations/` | Flyway migrations that create schema and seed official linguistic resources. |
+| `sql/demo/insert_demo_data.sql` | Manual demo data loader with 10 documents and persisted query evidence. |
+| `sql/queries/` | Manual verification queries for document counts, FrecT, LSI vectors, query logs, and final project query requirements. |
 
-### `sql/`
-Scripts SQL del proyecto.
-
-- `schema.sql`: definición de tablas, llaves e índices.
-- `seed.sql`: carga inicial de datos y recursos.
-- `queries.sql`: consultas auxiliares de validación y prueba.
-
-### `src/main/java/com/lsi/`
-Código fuente principal del sistema, organizado por módulos:
-
-- `config/`: configuraciones globales.
-- `model/`: entidades y clases de dominio.
-- `preprocessing/`: normalización, tokenización, filtrado y stemming.
-- `semantic/`: sinónimos y manejo básico de polisemia.
-- `indexing/`: vocabulario y matriz de frecuencias.
-- `lsi/`: SVD y representación reducida.
-- `query/`: consultas, similitud, disimilitud y ranking.
-- `persistence/`: repositorios y acceso a base de datos.
-- `ui/`: interfaz de línea de comandos.
-
-### `src/main/resources/`
-Recursos de configuración y apoyo lingüístico:
-
-- `application.properties`
-- `stopwords.txt`
-- `suffixes.txt`
-- `synonyms.csv`
-- `polysemy_rules.csv`
-
-### `src/test/java/com/lsi/`
-Pruebas unitarias y de integración por módulo.
-
----
-
-## Arquitectura lógica
-
-El sistema sigue este flujo general:
-
-```text
-Documentos
-   ↓
-Preprocesamiento
-   ↓
-Tratamiento semántico
-   ↓
-Vocabulario + FrecT
-   ↓
-Persistencia SQL
-   ↓
-SVD / LSI
-   ↓
-Consulta y ranking
-   ↓
-Resultados
-```
-
----
-
-## Diseño de base de datos
-
-La base de datos relacional fue planteada para soportar indexación, consulta y comparación entre la representación clásica y la representación reducida por LSI.
-
-### Tablas principales
+Core tables:
 
 - `documents`
 - `terms`
 - `document_terms`
 - `stop_words`
 - `suffix_rules`
-- `synonyms`
+- `term_synonyms`
 - `polysemy_rules`
-- `lsi_dimensions`
-- `document_vectors_lsi`
-- `query_logs`
+- `latent_models`
+- `latent_document_vectors`
+- `latent_query_vectors`
+- `selected_index_terms`
+- `query_runs`
+- `query_results`
 
-### Propósito
+Load migrations:
 
-- almacenar documentos y términos;
-- representar la matriz FrecT de forma relacional;
-- persistir recursos lingüísticos;
-- guardar vectores reducidos LSI;
-- registrar consultas y resultados de prueba.
+```powershell
+mvn flyway:migrate
+```
 
----
+Load demo data:
 
-## Tecnologías previstas
+```powershell
+psql -U postgres -h localhost -p 5433 -d lsi_documentbase -f sql/demo/insert_demo_data.sql
+```
 
-### Base del proyecto
-- **Java**
-- **Maven**
+Run final SQL verification:
 
-### Persistencia
-- **PostgreSQL** o **MySQL**
-- **JDBC**
+```powershell
+psql -U postgres -h localhost -p 5433 -d lsi_documentbase -f sql/queries/11_compare_documents_similarity.sql
+psql -U postgres -h localhost -p 5433 -d lsi_documentbase -f sql/queries/12_rank_query_topn_cosine.sql
+psql -U postgres -h localhost -p 5433 -d lsi_documentbase -f sql/queries/13_rank_query_topn_jaccard.sql
+psql -U postgres -h localhost -p 5433 -d lsi_documentbase -f sql/queries/14_rank_query_topn_euclidean.sql
+```
 
-### Álgebra lineal / SVD
-Se recomienda usar una librería con soporte para matrices y descomposición SVD. Opciones viables:
+## Database Configuration
 
-- **Apache Commons Math**
-- **EJML**
-- **Smile**
+Runtime database values live in `src/main/resources/application.properties` and can be overridden without editing tracked files:
 
-### Testing
-- **JUnit 5**
+```powershell
+$env:LSI_DB_URL = "jdbc:postgresql://localhost:5433/lsi_documentbase"
+$env:LSI_DB_USER = "postgres"
+$env:LSI_DB_PASSWORD = "your_password_here"
+```
 
-### Logging
-- **SLF4J**
-- **Logback**
+Flyway can be overridden with Maven properties:
 
----
+```powershell
+mvn flyway:migrate "-Dflyway.password=your_password_here"
+```
 
-## Flujo de trabajo colaborativo
+## Persistence Behavior
 
-El proyecto fue diseñado para que **cada integrante implemente su parte sin esperar a los resultados de los demás**.
+The CLI builds the corpus and query results first, then attempts to persist them through `CorpusPersistenceService` and `QueryResultPersistenceService`.
 
-### Regla principal
-Cada desarrollador debe trabajar de forma independiente sobre su módulo, dejarlo funcional y documentado, y asumir contratos claros de entrada y salida para que la integración posterior sea directa.
+If PostgreSQL is available and `sql/demo/insert_demo_data.sql` has been loaded, the flow stores:
 
-### Principios de trabajo
-- no bloquearse por módulos ajenos;
-- no esperar lógica terminada de otros;
-- usar mocks, datos de prueba o interfaces provisionales;
-- respetar la estructura de paquetes y clases acordadas;
-- dejar cada módulo listo para conectarse después.
+- the 10-document corpus in `documents`;
+- vocabulary rows in `terms`;
+- FrecT rows in `document_terms`;
+- LSI document vector components in `latent_document_vectors`;
+- expert-selected indexing terms in `selected_index_terms`;
+- one row in `query_runs` per query execution;
+- one row in `query_results` per ranked document result.
 
----
+If PostgreSQL is unavailable, the CLI prints a clear persistence warning and continues showing the algorithmic results. This keeps the classroom demo runnable while still connecting the real execution path to the DBMS requirement.
 
-## Distribución sugerida del equipo
+## Corpus Scope
 
-### Integrante 1 — Coordinación e integración
-- revisar consistencia global;
-- validar estructura;
-- coordinar integración entre módulos;
-- consolidar entregables finales.
+The raw PDFs under `data/raw/` are source references. The executable final demo uses `data/fixtures/query/document_terms.csv` as the controlled 10-document corpus so that the professor sees the same reproducible FrecT, SVD/LSI, and query outputs on every run. The system should therefore be defended as a controlled corpus pipeline, not as automatic PDF extraction.
 
-### Integrante 2 — Base de datos y persistencia
-- diseño relacional;
-- scripts SQL;
-- repositorios;
-- conexión con DBMS.
+## Documentation
 
-### Integrante 3 — Preprocesamiento
-- normalización;
-- tokenización;
-- eliminación de stop words;
-- stemming y manejo de sufijos.
+- `docs/architecture-overview.md`: module architecture and runtime flow.
+- `docs/query-examples.md`: CLI and SQL query examples.
+- `docs/final-sql-verification.md`: final SQL verification checklist.
+- `docs/final-technical-report.docx`: final technical report.
 
-### Integrante 4 — Semántica
-- sinónimos;
-- reglas de polisemia;
-- expansión o normalización semántica.
+## Verification
 
-### Integrante 5 — Indexación y LSI
-- vocabulario;
-- FrecT;
-- SVD;
-- representación reducida.
+Compile:
 
-### Integrante 6 — Consultas e interfaz
-- similitud entre documentos;
-- ranking top-n;
-- funciones de comparación;
-- CLI o interfaz de demostración.
+```powershell
+mvn -DskipTests compile
+```
 
----
+Run tests:
 
-## Reglas de implementación
+```powershell
+mvn test
+```
 
-Cada integrante debe:
+Some persistence tests require a reachable local PostgreSQL instance configured in `src/main/resources/application.properties`; when the database is unavailable, those tests are skipped by assumption.
 
-1. implementar únicamente su módulo;
-2. no modificar arbitrariamente módulos ajenos;
-3. respetar el package `com.lsi`;
-4. documentar supuestos y contratos;
-5. dejar comentarios claros donde falte integración;
-6. usar datos simulados si aún no existe conexión con otro módulo;
-7. dejar métodos, clases y archivos listos para conexión posterior.
-
----
-
-## Contratos de integración
-
-- `preprocessing` debe producir texto limpio o tokens listos.
-- `semantic` debe recibir tokens o texto normalizado y devolver representación enriquecida.
-- `indexing` debe trabajar con tokens finales y producir vocabulario y frecuencias.
-- `lsi` debe recibir la matriz de frecuencias.
-- `query` debe consumir vectores clásicos o reducidos.
-- `persistence` debe poder guardar y recuperar entidades del dominio.
-- `ui` debe llamar servicios ya definidos, no implementar lógica de negocio.
-
----
-
-## Funcionalidades mínimas esperadas
-
-El sistema debe permitir:
-
-- registrar y cargar documentos;
-- procesar documentos con pipeline de texto;
-- construir la matriz FrecT;
-- guardar resultados en base de datos;
-- aplicar LSI sobre la representación documental;
-- comparar dos documentos dados;
-- procesar una consulta textual;
-- devolver los `n` documentos más relevantes;
-- usar al menos dos funciones de similitud;
-- usar al menos una función de disimilitud.
-
----
-
-## Métricas sugeridas
-
-### Similitud
-- Coseno
-- Jaccard o Dice
-
-### Disimilitud
-- Distancia Euclidiana o Manhattan
-
----
-
-## Flujo esperado de uso
-
-1. cargar documentos;  
-2. ejecutar preprocesamiento;  
-3. ejecutar tratamiento semántico;  
-4. construir vocabulario;  
-5. generar FrecT;  
-6. guardar en base de datos;  
-7. calcular SVD y representación LSI;  
-8. realizar consultas;  
-9. comparar resultados y mostrar ranking.  
-
----
-
-## Estado actual
-
-La estructura base del proyecto ya fue definida para permitir implementación modular.  
-A partir de este punto, cada integrante puede comenzar directamente su parte.
-
-### Pendiente por implementar
-- lógica interna de clases;
-- scripts SQL completos;
-- recursos lingüísticos definitivos;
-- integración entre módulos;
-- pruebas funcionales completas;
-- dataset final de documentos.
-
----
-
-## Recomendaciones de desarrollo
-
-- mantener commits pequeños y claros;
-- trabajar por ramas;
-- no mezclar lógica de distintos módulos;
-- probar localmente antes de integrar;
-- dejar comentarios técnicos en clases base;
-- documentar decisiones importantes en `docs/`.
-
----
-
-## Nombre del proyecto
+## Project Name
 
 **Latent Semantic Indexing Document Base**
-
-Nombre descriptivo alternativo:
-
-**Sistema de Recuperación Documental con LSI**
-
----
-
-## Nota final para el equipo
-
-Cada integrante debe avanzar **sin esperar a que los demás terminen**. La prioridad es dejar el módulo propio:
-
-- estructurado;
-- documentado;
-- funcional en su alcance;
-- listo para integrarse cuando llegue el momento.
-
-La integración final debe ser un proceso de conexión entre módulos ya preparados, no una etapa donde todavía se empiece a construir la lógica principal.

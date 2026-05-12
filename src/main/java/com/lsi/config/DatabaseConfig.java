@@ -13,8 +13,9 @@ import java.util.Properties;
 /**
  * Database configuration for the LSI document base system.
  *
- * This class loads the PostgreSQL connection settings from application.properties
- * and creates a HikariCP DataSource that can be reused by repositories.
+ * This class loads PostgreSQL connection settings from application.properties,
+ * allows environment variable overrides, and creates a reusable HikariCP
+ * DataSource for repositories.
  */
 public final class DatabaseConfig {
 
@@ -47,9 +48,9 @@ public final class DatabaseConfig {
     private static HikariDataSource createDataSource() {
         Properties properties = loadProperties();
 
-        String url = properties.getProperty("db.url");
-        String user = properties.getProperty("db.user");
-        String password = properties.getProperty("db.password");
+        String url = valueOrDefault(System.getenv("LSI_DB_URL"), properties.getProperty("db.url"));
+        String user = valueOrDefault(System.getenv("LSI_DB_USER"), properties.getProperty("db.user"));
+        String password = valueOrDefault(System.getenv("LSI_DB_PASSWORD"), properties.getProperty("db.password", ""));
 
         if (url == null || url.isBlank()) {
             throw new IllegalStateException("Missing property: db.url");
@@ -57,10 +58,6 @@ public final class DatabaseConfig {
 
         if (user == null || user.isBlank()) {
             throw new IllegalStateException("Missing property: db.user");
-        }
-
-        if (password == null) {
-            throw new IllegalStateException("Missing property: db.password");
         }
 
         HikariConfig config = new HikariConfig();
@@ -77,6 +74,14 @@ public final class DatabaseConfig {
         config.setPoolName("LsiDocumentBasePool");
 
         return new HikariDataSource(config);
+    }
+
+    private static String valueOrDefault(String value, String defaultValue) {
+        if (value == null || value.isBlank()) {
+            return defaultValue;
+        }
+
+        return value;
     }
 
     private static Properties loadProperties() {

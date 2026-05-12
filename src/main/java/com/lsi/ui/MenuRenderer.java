@@ -1,8 +1,23 @@
 package com.lsi.ui;
 
-/*
- * Aquí va la lógica para imprimir menús, mensajes, tablas simples y resultados en consola.
- */
-public class MenuRenderer {
-}
+import java.util.List;
 
+public class MenuRenderer {
+
+    public void section(String title) {
+        System.out.println();
+        System.out.println("============================================================");
+        System.out.println(title);
+        System.out.println("============================================================");
+    }
+
+    public void lines(List<String> lines) {
+        if (lines == null) {
+            return;
+        }
+
+        for (String line : lines) {
+            System.out.println(line == null ? "" : line);
+        }
+    }
+}

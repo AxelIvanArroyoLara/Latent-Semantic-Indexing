@@ -125,7 +125,7 @@ Ejemplo local:
 ```properties
 db.url=jdbc:postgresql://localhost:5433/lsi_documentbase
 db.user=postgres
-db.password=Miami123
+db.password=
 ```
 
 ### Decisión temporal
