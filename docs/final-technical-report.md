@@ -37,7 +37,7 @@ Hypothesis: semantic normalization plus LSI produces a compact representation th
 - Polysemy/domain phrases: `src/main/resources/polysemy_rules.csv` through `PolysemyResolver`.
 - FrecT: `FrequencyMatrixBuilder` creates a TF-IDF terms x documents matrix.
 - LSI: `LsiReducer` applies SVD and returns `LatentSpaceModel`.
-- Expert term selection: `TermSelectionService`, `final-demo --expert-terms ...`, and `select-terms --terms ...`.
+- Expert term selection: `TermSelectionService`, `final-demo --expert-terms ...`, `--index-terms 150`, and `select-terms --terms ...`.
 - Similarity: cosine and Jaccard.
 - Dissimilarity: Euclidean distance.
 - Persistence: PostgreSQL repositories, `CorpusPersistenceService`, `SelectedTermRepository`, and `QueryResultPersistenceService`.
@@ -71,7 +71,7 @@ Runtime flow from `main`:
 6. `FrequencyMatrixBuilder` creates FrecT.
 7. `LsiReducer` applies SVD/LSI.
 8. `TermSelectionService` ranks terms for expert selection.
-9. The system rebuilds FrecT/LSI using only the expert-selected indexing terms.
+9. The system rebuilds FrecT/LSI using a broader expert-selected indexing vocabulary, 150 terms by default, while showing only the top terms needed for review.
 10. `CorpusPersistenceService` attempts to save documents, terms, FrecT rows, LSI vectors, and selected terms.
 11. `QueryProcessor` executes document comparison and top-n retrieval on the active filtered index.
 12. `QueryResultPersistenceService` attempts to save query runs and ranked results.
@@ -93,7 +93,7 @@ The current `main` execution prints the complete guided demonstration:
 - Stop list, suffix list, synonyms, and polysemy resources are named.
 - FrecT dimensions are printed as terms x documents.
 - SVD singular values and top indexing terms are printed.
-- Expert-selected terms are printed, used to rebuild the active index, and persisted when PostgreSQL is available.
+- Expert-selected terms are printed for review; a broader selected vocabulary is used to rebuild the active index and is persisted when PostgreSQL is available.
 - D1 vs D3 is compared with cosine, Jaccard, and Euclidean distance.
 - `academic stress anxiety` is retrieved with cosine.
 - `sleep wellbeing` is retrieved with Jaccard.

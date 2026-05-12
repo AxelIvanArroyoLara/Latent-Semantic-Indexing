@@ -21,8 +21,8 @@ Running with no arguments starts `com.lsi.App`, delegates to `CommandLineInterfa
 Useful explicit commands:
 
 ```powershell
-mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=final-demo --k 3 --terms 10 --top 5 --matrix preview"
-mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=final-demo --k 3 --terms 10 --top 5 --matrix full"
+mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=final-demo --k 3 --terms 10 --index-terms 150 --top 5 --matrix preview"
+mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=final-demo --k 3 --terms 10 --index-terms 150 --top 5 --matrix full"
 mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=final-demo --expert-terms depression,anxiety,social_media"
 mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=select-terms --terms depression,anxiety --k 3"
 mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=compare-docs --d1 D1 --d2 D3"
@@ -40,7 +40,7 @@ The system provides:
 - semantic normalization with synonyms and polysemy/domain phrase rules;
 - FrecT construction with TF-IDF weighting;
 - SVD/LSI reduction using EJML;
-- expert-oriented significant term selection;
+- expert-oriented significant term selection with a broader active vocabulary, 150 terms by default;
 - document-document similarity with cosine, Jaccard, and Euclidean distance;
 - top-n retrieval for text queries with cosine and Jaccard similarity;
 - top-n retrieval with Euclidean distance as a dissimilarity function;
@@ -174,7 +174,7 @@ If PostgreSQL is unavailable, the CLI prints a clear persistence warning and con
 
 The executable final demo extracts text directly from the PDFs under `data/raw/`. CSV fixtures remain only as legacy/unit-test support; they are not the document base used by `main`, `final-demo`, `demo-pipeline`, `inspect-lsi`, `compare-docs`, `query`, or `select-terms`.
 
-The final demo first builds an initial LSI model from the full extracted PDF corpus, ranks significant terms, applies the expert-selected terms, rebuilds FrecT/LSI with only those terms, and executes the query examples against that filtered active index.
+The final demo first builds an initial LSI model from the full extracted PDF corpus, ranks significant terms, applies the expert-selected terms, rebuilds FrecT/LSI with a broader selected vocabulary, 150 terms by default, and executes the query examples against that filtered active index. The console shows a short expert-review list while the active index keeps enough terms to preserve latent semantic richness.
 
 ## Documentation
 

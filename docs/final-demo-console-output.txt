@@ -9,10 +9,10 @@
 SLF4J: Failed to load class "org.slf4j.impl.StaticLoggerBinder".
 SLF4J: Defaulting to no-operation (NOP) logger implementation
 SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further details.
-may 11, 2026 10:33:39 P.M. com.lsi.lsi.LsiReducer reduce
-INFO: Running SVD for matrix 8597x15
-may 11, 2026 10:33:42 P.M. com.lsi.lsi.LsiReducer reduce
-INFO: Running SVD for matrix 10x15
+may 11, 2026 11:07:55 P.M. com.lsi.lsi.LsiReducer reduce
+INFO: Running SVD for matrix 7771x15
+may 11, 2026 11:08:32 P.M. com.lsi.lsi.LsiReducer reduce
+INFO: Running SVD for matrix 150x15
 
 ============================================================
 FINAL PROJECT TECHNICAL DEMONSTRATION
@@ -29,49 +29,49 @@ Source directory: data\raw
 Extracted PDF documents: 15
 D1 - 2785 Article Text 11545 3 10 20240125
     Source PDF: data\raw\2785-Article Text-11545-3-10-20240125.pdf
-    Canonical term preview: [morrison, liu, zeng, well, ill, campu, internate, journal, wellbe, http, doi, org, ijw, v13i3]
+    Active indexing term preview: [well, campu, wellbe, mental_health, student, important, used, problem, possible, intervention, within, individual, view, using]
 D2 - Kushwah.docx
     Source PDF: data\raw\377086.pdf
-    Canonical term preview: [student, mental, wellbe, critical, tim, normalis, discussion, action, dr, lovleen, kushwah, university, glasgow, human]
+    Active indexing term preview: [student, mental, wellbe, critical, education, academic, experience, survey, population, measur, stressor, time, research, explor]
 D3 - Depressive and Anxious Symptoms Among Young Adults in the COVID-19 Pandemic: Results from Monitoring the Future
     Source PDF: data\raw\cdc_129392_DS1.pdf
-    Canonical term preview: [depressive, anxiou, symptom, among, young, adult, covid, pandemic, result, monitor, future, noah, kreski, mph1]
+    Active indexing term preview: [symptom, pandemic, result, future, health, appli, research, social, associat, mental_health, depression, anxiety, method, using]
 D4 - Mental health in undergraduate students several months into the COVID-19 pandemic compared to before the pandemic
     Source PDF: data\raw\cdc_157044_DS1.pdf
-    Canonical term preview: [mental_health, undergraduate, student, several, month, into, covid, pandemic, compar, before, pandemic, eric, jacob, phda]
+    Active indexing term preview: [mental_health, student, pandemic, education, campu, participant, includ, method, college, health, survey, result, high, stress]
 D5 - College Students Speak A Survey Report on Mental Health NAMI 2012
     Source PDF: data\raw\College-Students-Speak_A-Survey-Report-on-Mental-Health-NAMI-2012.pdf
-    Canonical term preview: [college, student, speak, survey, report, mental_health, college, student, speak, survey, report, mental_health, college, student]
+    Active indexing term preview: [college, student, survey, mental_health, mental, design, servic, support, research, community, need, information, colleg, staff]
 D6 - CollegeStudentMentalHealthActionToolkit
     Source PDF: data\raw\CollegeStudentMentalHealthActionToolkit.pdf
-    Canonical term preview: [college, student, mental_health, action, toolkit, mental_health, data, statistic, develop, healthy, mind, social_media, partnership, active]
+    Active indexing term preview: [college, student, mental_health, data, develop, social_media, problem, diverse, population, stigma, perceiv, help, seek, academic]
 D7 - Microsoft Word - Final-help-seeking review Feb 22 2012 (with title page).doc
     Source PDF: data\raw\Eisenberg2012.pdf
-    Canonical term preview: [help, seek, mental_health, college, campus, review, evidence, next, step, research, practice, daniel, eisenberg, phd]
+    Active indexing term preview: [help, seek, mental_health, college, campus, research, problem, population, stigma, high, disorder, campu, intervention, program]
 D8 - jed nami guide starting conversation college mental health
     Source PDF: data\raw\jed-nami-guide-starting-conversation-college-mental-health.pdf
-    Canonical term preview: [college, your, mental_health, start, conversation, copyright, august, national, alliance, mental, illness, nami, jed, foundation]
+    Active indexing term preview: [college, mental_health, mental, provide, education, support, across, health, high, colleg, help, understand, condition, campu]
 D9 - malcolm edwards catherine mary exploring student mental health and wellbeing in the context of campus spaces
     Source PDF: data\raw\malcolm-edwards--catherine-mary--exploring-student-mental-health-and-wellbeing-in-the-context-of-campus-spaces.pdf
-    Canonical term preview: [explor, student, mental_health, wellbe, context, campu, spac, catherine, malcolm, edward, thesi, submitt, faculty, graduate]
+    Active indexing term preview: [explor, student, mental_health, wellbe, campu, design, research, significant, experienc, question, featur, relat, different, decision]
 D10 - Measuring Well Being In A College Campus Setting White Paper
     Source PDF: data\raw\Measuring_Well-Being_In_A_College_Campus_Setting_White_Paper.pdf
-    Canonical term preview: [measur, well, college, campu, sett, ryan, travia, edd, babson, college, jam, larcu, ma, university]
+    Active indexing term preview: [measur, well, college, campu, wellbe, support, project, provid, health, student, research, participat, time, help]
 D11 - Mental Health Higher Ed Stats
     Source PDF: data\raw\Mental-Health-Higher-Ed-Stats.pdf
-    Canonical term preview: [american, council, education, 2025updat, april, anxiety, depression, college, student, number, student, who, screen, positive]
+    Active indexing term preview: [education, anxiety, depression, college, student, number, symptom, year, stress, three, experienc, high, level, within]
 D12 - NCHA III FALL 2022 REFERENCE GROUP EXECUTIVE SUMMARY
     Source PDF: data\raw\NCHA-III_FALL_2022_REFERENCE_GROUP_EXECUTIVE_SUMMARY.pdf
-    Canonical term preview: [fall, reference, group, executive, summary, table, content, introduction, not, ii, finding, general, health, campu]
+    Active indexing term preview: [health, campu, physical, activity, academic, mental_health, wellbe, condition, sleep, sample, college, represent, diverse, provid]
 D13 - Factors that influence mental health of university and college students in the UK: a systematic review
     Source PDF: data\raw\s12889-022-13943-x.pdf
-    Canonical term preview: [eprint, whiterose, ac, uk, http, eprint, whiterose, ac, uk, university, leed, sheffield, york, deposit]
+    Active indexing term preview: [research, factor, influence, mental_health, college, student, health, term, upon, work, information, consider, includ, education]
 D14 - trends_cmp_3.eps
     Source PDF: data\raw\student-life.pdf
-    Canonical term preview: [studentlife, assess, mental_health, academic, performance, behavioral, trend, college, student, using, smartphon, rui, wang, fanglin]
+    Active indexing term preview: [mental_health, academic, college, student, using, stress, impact, sleep, activity, mental, well, across, term, result]
 D15 - TM wellbeing mentalhealth
     Source PDF: data\raw\TM_wellbeing_mentalhealth.pdf
-    Canonical term preview: [well, mental_health, among, student, european, higher, education, jori, cuppen, ardita, muja, roo, geurt, researchn]
+    Active indexing term preview: [well, mental_health, student, education, important, provid, self, influenc, people, impact, future, pandemic, measur, social]
 
 ============================================================
 STEP 2. PREPROCESSING AND SEMANTICS
@@ -91,21 +91,23 @@ Applied examples:
 STEP 3. FREQUENCY MATRIX FrecT
 ============================================================
 Requirement: build the FrecT matrix generated from the document base.
-This FrecT is rebuilt after expert term selection, so only selected indexing terms remain.
-FrecT dimensions: 10 terms x 15 documents.
-FrecT preview with the first 12 terms.
+This FrecT is rebuilt after expert term selection, so the active index keeps a broader selected vocabulary.
+FrecT dimensions: 150 terms x 15 documents.
+FrecT preview with 12 expert-selected terms.
 Columns: [D1, D2, D3, D4, D5, D6, D7, D8, D9, D10, D11, D12, D13, D14, D15]
 term                            D1        D2        D3        D4        D5        D6        D7        D8        D9       D10       D11       D12       D13       D14       D15
-academic                    13.000   106.000     1.000     7.000    13.000     9.000     3.000    11.000    28.000     6.000     5.000     9.000    12.000    23.000     2.000
-anxiety                      7.000    16.000    44.000    31.000     3.000     9.000     9.000     5.000     5.000    50.000     6.000     6.000    37.000     1.000    11.000
-counseling                   0.000     7.350     1.470     1.470     0.000     1.470     4.410     1.470     1.470     0.000     1.470     0.000     1.470     0.000     0.000
-depression                  15.000     3.000    11.000    23.000     6.000    10.000    18.000     3.000    21.000    36.000     6.000     5.000    33.000    28.000    11.000
-mental_health              112.000    80.000    19.000    64.000   236.000   117.000    78.000   119.000   136.000    65.000    11.000    11.000   171.000    10.000    83.000
-stress                       9.000    30.000     3.000    17.000    10.000     2.000     2.000    13.000    44.000    35.000     3.000     6.000    54.000    77.000     6.000
 student                    263.000   245.000    16.000   148.000   201.000   157.000   146.000    55.000   452.000   183.000    23.000   122.000   211.000   163.000   199.000
-support                      8.516    62.808     8.516     1.065   100.067    27.678     3.194    22.355   119.228    26.613     0.000     1.065    38.323     4.258     3.194
+mental_health              112.000    80.000    19.000    64.000   236.000   117.000    78.000   119.000   136.000    65.000    11.000    11.000   171.000    10.000    83.000
+anxiety                      7.000    16.000    44.000    31.000     3.000     9.000     9.000     5.000     5.000    50.000     6.000     6.000    37.000     1.000    11.000
+depression                  15.000     3.000    11.000    23.000     6.000    10.000    18.000     3.000    21.000    36.000     6.000     5.000    33.000    28.000    11.000
+stress                       9.000    29.000     3.000    17.000    10.000     2.000     2.000    13.000    44.000    35.000     3.000     6.000    54.000    77.000     6.000
 well                       234.198    18.097     5.323     4.258     3.194    15.968    11.710     2.129    26.613   340.652     0.000     8.516    18.097    24.484    90.486
 wellbe                      42.267   156.993     1.208     1.208     0.000     3.623     2.415     0.000    97.819    35.022     0.000     2.415    77.289     1.208     4.831
+academic                    13.000   105.000     1.000     7.000    13.000     9.000     3.000    11.000    28.000     6.000     5.000     9.000    12.000    23.000     2.000
+support                      8.516    62.808     8.516     1.065   100.067    27.678     3.194    22.355   119.228    26.613     0.000     1.065    38.323     4.258     3.194
+counseling                   0.000     7.350     1.470     1.470     0.000     1.470     4.410     1.470     1.470     0.000     1.470     0.000     1.470     0.000     0.000
+sleep                        6.438     0.000    10.301     0.000     2.575     2.575     0.000     5.151     1.288     1.288     0.000    14.165     2.575    77.261     2.575
+social_media                 0.000     0.000     5.499     0.000     1.375     8.248    20.620     4.124     2.749     5.499    15.122     0.000    23.370     8.248     0.000
 Note: to print the full FrecT matrix use: final-demo --matrix full
 
 ============================================================
@@ -116,34 +118,36 @@ Requested k: 3
 Initial PDF-corpus k used before term filtering: 3
 Active filtered-index k used after expert selection: 3
 Initial singular values used to rank significant terms:
-  sigma_1 = 1780.4272
-  sigma_2 = 1005.8571
-  sigma_3 = 760.1419
+  sigma_1 = 1631.4640
+  sigma_2 = 950.7672
+  sigma_3 = 646.8898
 
 Top indexing terms for expert review:
-1. student - significance: 740.5883
-2. space - significance: 490.7606
-3. built - significance: 407.3326
-4. well - significance: 381.7853
-5. campu - significance: 341.9741
-6. mental_health - significance: 325.8372
-7. emotion - significance: 315.6565
-8. environment - significance: 308.0688
-9. anuscript - significance: 298.7567
-10. uthor - significance: 298.7567
+1. student - significance: 766.1603
+2. well - significance: 385.4375
+3. campu - significance: 348.5730
+4. mental_health - significance: 347.9379
+5. emotion - significance: 331.2763
+6. survey - significance: 311.2681
+7. environment - significance: 308.6040
+8. study - significance: 245.9901
+9. health - significance: 212.1856
+10. research - significance: 211.6349
 
-Expert-selected indexing terms to persist:
-1. student - significance: 740.5883
-2. mental_health - significance: 325.8372
-3. anxiety - significance: 75.2804
-4. depression - significance: 64.4339
-5. stress - significance: 88.1016
-6. well - significance: 381.7853
-7. wellbe - significance: 147.4898
-8. academic - significance: 62.8873
-9. support - significance: 147.7923
-10. counseling - significance: 4.8814
-Active indexing vocabulary after expert filtering: [academic, anxiety, counseling, depression, mental_health, stress, student, support, well, wellbe]
+Expert-selected indexing terms shown for review:
+1. student - significance: 766.1603
+2. mental_health - significance: 347.9379
+3. anxiety - significance: 66.3316
+4. depression - significance: 62.9605
+5. stress - significance: 88.4863
+6. well - significance: 385.4375
+7. wellbe - significance: 153.3305
+8. academic - significance: 71.6127
+9. support - significance: 148.9537
+10. counseling - significance: 5.0314
+Total expert-selected terms used by the active index: 150
+Active expert-filtered indexing vocabulary size: 150
+Active indexing vocabulary preview: [student, mental_health, anxiety, depression, stress, well, wellbe, academic, support, counseling]
 Corpus persistence not completed: PostgreSQL is unavailable or migrations are not applied. Run Flyway, make sure PostgreSQL is available, then execute the PDF demo again.
 
 ============================================================
@@ -154,9 +158,9 @@ Executed query: compare D1 against D3.
 Given two documents D1 and D2, evaluate their degree of similarity.
 D1: D1 - 2785 Article Text 11545 3 10 20240125
 D2: D3 - Depressive and Anxious Symptoms Among Young Adults in the COVID-19 Pandemic: Results from Monitoring the Future
-Cosine similarity: 0.8463
-Jaccard similarity: 0.9000
-Euclidean distance: 345.6757
+Cosine similarity: 0.9173
+Jaccard similarity: 0.6716
+Euclidean distance: 327.6325
 
 ============================================================
 STEP 6. QUERY 2 - RETRIEVE TOP-N WITH SIMILARITY FUNCTIONS
@@ -167,11 +171,11 @@ Query: student mental health anxiety
 Metric: cosine
 Top N: 5
 Terms used: [student, mental_health, anxiety]
-1. D7 - Microsoft Word - Final-help-seeking review Feb 22 2012 (with title page).doc - score: 0.9965
-2. D4 - Mental health in undergraduate students several months into the COVID-19 pandemic compared to before the pandemic - score: 0.9917
-3. D13 - Factors that influence mental health of university and college students in the UK: a systematic review - score: 0.9909
-4. D11 - Mental Health Higher Ed Stats - score: 0.9881
-5. D6 - CollegeStudentMentalHealthActionToolkit - score: 0.9848
+1. D12 - NCHA III FALL 2022 REFERENCE GROUP EXECUTIVE SUMMARY - score: 0.9918
+2. D4 - Mental health in undergraduate students several months into the COVID-19 pandemic compared to before the pandemic - score: 0.9882
+3. D6 - CollegeStudentMentalHealthActionToolkit - score: 0.9868
+4. D13 - Factors that influence mental health of university and college students in the UK: a systematic review - score: 0.9862
+5. D15 - TM wellbeing mentalhealth - score: 0.9825
 Persistence not completed: PostgreSQL is unavailable or migrations are not applied. Run Flyway, make sure PostgreSQL is available, then execute the PDF demo again.
 
 Similarity function 2: Jaccard.
@@ -179,11 +183,11 @@ Query: depression stress well
 Metric: jaccard
 Top N: 5
 Terms used: [depression, stress, well]
-1. D5 - College Students Speak A Survey Report on Mental Health NAMI 2012 - score: 0.3750
-2. D1 - 2785 Article Text 11545 3 10 20240125 - score: 0.3333
-3. D10 - Measuring Well Being In A College Campus Setting White Paper - score: 0.3333
-4. D12 - NCHA III FALL 2022 REFERENCE GROUP EXECUTIVE SUMMARY - score: 0.3333
-5. D14 - trends_cmp_3.eps - score: 0.3333
+1. D11 - Mental Health Higher Ed Stats - score: 0.0526
+2. D8 - jed nami guide starting conversation college mental health - score: 0.0400
+3. D5 - College Students Speak A Survey Report on Mental Health NAMI 2012 - score: 0.0326
+4. D12 - NCHA III FALL 2022 REFERENCE GROUP EXECUTIVE SUMMARY - score: 0.0323
+5. D15 - TM wellbeing mentalhealth - score: 0.0303
 Persistence not completed: PostgreSQL is unavailable or migrations are not applied. Run Flyway, make sure PostgreSQL is available, then execute the PDF demo again.
 
 ============================================================
@@ -194,11 +198,11 @@ Query: student mental health
 Metric: euclidean
 Top N: 5
 Terms used: [student, mental_health]
-1. D9 - malcolm edwards catherine mary exploring student mental health and wellbeing in the context of campus spaces - score: 157.7249
-2. D13 - Factors that influence mental health of university and college students in the UK: a systematic review - score: 290.8248
-3. D5 - College Students Speak A Survey Report on Mental Health NAMI 2012 - score: 299.4218
-4. D2 - Kushwah.docx - score: 316.6471
-5. D1 - 2785 Article Text 11545 3 10 20240125 - score: 319.1406
+1. D13 - Factors that influence mental health of university and college students in the UK: a systematic review - score: 244.5487
+2. D5 - College Students Speak A Survey Report on Mental Health NAMI 2012 - score: 250.8927
+3. D2 - Kushwah.docx - score: 265.7111
+4. D1 - 2785 Article Text 11545 3 10 20240125 - score: 280.4382
+5. D7 - Microsoft Word - Final-help-seeking review Feb 22 2012 (with title page).doc - score: 349.4671
 For Euclidean distance, lower score means closer.
 Persistence not completed: PostgreSQL is unavailable or migrations are not applied. Run Flyway, make sure PostgreSQL is available, then execute the PDF demo again.
 
@@ -214,6 +218,6 @@ Final report: docs/final-technical-report.docx
 [INFO] ------------------------------------------------------------------------
 [INFO] BUILD SUCCESS
 [INFO] ------------------------------------------------------------------------
-[INFO] Total time:  12.406 s
-[INFO] Finished at: 2026-05-11T22:33:46-06:00
+[INFO] Total time:  45.973 s
+[INFO] Finished at: 2026-05-11T23:08:36-06:00
 [INFO] ------------------------------------------------------------------------

@@ -19,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class CommandLineInterface {
@@ -39,6 +40,44 @@ public class CommandLineInterface {
             "health",
             "campu",
             "college"
+    );
+    private static final int DEFAULT_DISPLAY_TERMS = 10;
+    private static final int DEFAULT_INDEX_TERMS = 150;
+    private static final Set<String> DEFAULT_EXPERT_TERM_SET = Set.copyOf(DEFAULT_EXPERT_TERM_PREFERENCES);
+    private static final Set<String> NON_INDEXING_TERMS = Set.of(
+            "about",
+            "above",
+            "access",
+            "address",
+            "administration",
+            "achf",
+            "also",
+            "american",
+            "association",
+            "author",
+            "avoid",
+            "avoidance",
+            "bas",
+            "belong",
+            "below",
+            "block",
+            "break",
+            "built",
+            "cis",
+            "content",
+            "copyright",
+            "eprint",
+            "fig",
+            "figure",
+            "ijw",
+            "license",
+            "manuscript",
+            "phda",
+            "space",
+            "spac",
+            "table",
+            "uthor",
+            "whiterose"
     );
 
     private QueryProcessor queryProcessor;
@@ -140,7 +179,8 @@ public class CommandLineInterface {
         int dimensions = Integer.parseInt(
                 options.getOrDefault("k", String.valueOf(AppConfig.DEFAULT_LSI_DIMENSIONS))
         );
-        int topTerms = Integer.parseInt(options.getOrDefault("terms", "10"));
+        int displayTerms = Integer.parseInt(options.getOrDefault("terms", String.valueOf(DEFAULT_DISPLAY_TERMS)));
+        int indexTerms = Integer.parseInt(options.getOrDefault("index-terms", String.valueOf(DEFAULT_INDEX_TERMS)));
         int topDocuments = Integer.parseInt(options.getOrDefault("top", "5"));
         boolean fullMatrix = "full".equalsIgnoreCase(options.getOrDefault("matrix", "preview"));
 
@@ -149,8 +189,9 @@ public class CommandLineInterface {
                 dimensions
         );
         LatentSpaceModel sourceModel = sourceCorpus.latentSpaceModel();
+        Map<String, TermStats> termStats = buildTermStats(sourceCorpus);
         List<TermSelectionService.SelectedTerm> expertTerms =
-                resolveExpertTerms(sourceModel, topTerms, options.get("expert-terms"));
+                resolveExpertTerms(sourceModel, indexTerms, options.get("expert-terms"), termStats);
         IndexingService.IndexedCorpus corpus = indexingService.filterToSelectedTerms(
                 sourceCorpus,
                 expertTerms.stream().map(TermSelectionService.SelectedTerm::term).toList(),
@@ -159,6 +200,9 @@ public class CommandLineInterface {
         QueryProcessor processor = new QueryProcessor(corpus);
         FrequencyMatrix matrix = corpus.frequencyMatrix();
         LatentSpaceModel model = corpus.latentSpaceModel();
+        Set<String> activeIndexTerms = expertTerms.stream()
+                .map(TermSelectionService.SelectedTerm::term)
+                .collect(Collectors.toSet());
 
         printSection("FINAL PROJECT TECHNICAL DEMONSTRATION");
         System.out.println("Demonstrated objective: document base with LSI to index, represent, and query documents.");
@@ -172,9 +216,14 @@ public class CommandLineInterface {
         for (SemanticDocument document : sourceCorpus.semanticDocuments()) {
             String title = sourceCorpus.titlesByCode().getOrDefault(document.code(), document.code());
             String source = String.valueOf(document.metadata().getOrDefault("source", ""));
-            List<String> previewTerms = document.canonicalTerms().stream().limit(14).toList();
+            List<String> previewTerms = document.canonicalTerms()
+                    .stream()
+                    .filter(activeIndexTerms::contains)
+                    .distinct()
+                    .limit(14)
+                    .toList();
             System.out.printf(
-                    "%s - %s%n    Source PDF: %s%n    Canonical term preview: %s%n",
+                    "%s - %s%n    Source PDF: %s%n    Active indexing term preview: %s%n",
                     document.code(),
                     title,
                     source,
@@ -196,12 +245,12 @@ public class CommandLineInterface {
 
         printSection("STEP 3. FREQUENCY MATRIX FrecT");
         System.out.println("Requirement: build the FrecT matrix generated from the document base.");
-        System.out.println("This FrecT is rebuilt after expert term selection, so only selected indexing terms remain.");
+        System.out.println("This FrecT is rebuilt after expert term selection, so the active index keeps a broader selected vocabulary.");
         System.out.println("FrecT dimensions: " + matrix.values().length + " terms x " + matrix.documentCodes().size() + " documents.");
         if (fullMatrix) {
             printFrequencyMatrix(matrix);
         } else {
-            printFrequencyMatrixPreview(matrix, 12);
+            printFrequencyMatrixPreview(matrix, expertTerms, 12);
             System.out.println("Note: to print the full FrecT matrix use: final-demo --matrix full");
         }
 
@@ -214,9 +263,13 @@ public class CommandLineInterface {
         for (int i = 0; i < sourceModel.singularValues().length; i++) {
             System.out.printf("  sigma_%d = %.4f%n", i + 1, sourceModel.singularValues()[i]);
         }
-        printSelectedTerms(sourceModel, topTerms);
-        printExpertTerms(expertTerms);
-        System.out.println("Active indexing vocabulary after expert filtering: " + model.terms());
+        printSelectedTerms(sourceModel, displayTerms);
+        printExpertTerms(expertTerms, displayTerms);
+        System.out.println("Active expert-filtered indexing vocabulary size: " + model.terms().size());
+        System.out.println("Active indexing vocabulary preview: " + expertTerms.stream()
+                .map(TermSelectionService.SelectedTerm::term)
+                .limit(displayTerms)
+                .toList());
         persistIndexedCorpus(corpus, expertTerms);
 
         printSection("STEP 5. QUERY 1 - SIMILARITY BETWEEN TWO DOCUMENTS");
@@ -260,15 +313,17 @@ public class CommandLineInterface {
         int dimensions = Integer.parseInt(
                 options.getOrDefault("k", String.valueOf(AppConfig.DEFAULT_LSI_DIMENSIONS))
         );
-        int topTerms = Integer.parseInt(options.getOrDefault("top", "10"));
+        int displayTerms = Integer.parseInt(options.getOrDefault("top", String.valueOf(DEFAULT_DISPLAY_TERMS)));
+        int indexTerms = Integer.parseInt(options.getOrDefault("index-terms", String.valueOf(DEFAULT_INDEX_TERMS)));
         String explicitTerms = options.get("terms");
 
         IndexingService.IndexedCorpus sourceCorpus = indexingService.indexRawPdfDocuments(
                 AppConfig.RAW_DOCUMENT_DIR,
                 dimensions
         );
+        Map<String, TermStats> termStats = buildTermStats(sourceCorpus);
         List<TermSelectionService.SelectedTerm> expertTerms =
-                resolveExpertTerms(sourceCorpus.latentSpaceModel(), topTerms, explicitTerms);
+                resolveExpertTerms(sourceCorpus.latentSpaceModel(), indexTerms, explicitTerms, termStats);
         IndexingService.IndexedCorpus corpus = indexingService.filterToSelectedTerms(
                 sourceCorpus,
                 expertTerms.stream().map(TermSelectionService.SelectedTerm::term).toList(),
@@ -276,8 +331,12 @@ public class CommandLineInterface {
         );
 
         printSection("EXPERT INDEXING TERM SELECTION");
-        printExpertTerms(expertTerms);
-        System.out.println("Active indexing vocabulary after expert filtering: " + corpus.latentSpaceModel().terms());
+        printExpertTerms(expertTerms, displayTerms);
+        System.out.println("Active expert-filtered indexing vocabulary size: " + corpus.latentSpaceModel().terms().size());
+        System.out.println("Active indexing vocabulary preview: " + expertTerms.stream()
+                .map(TermSelectionService.SelectedTerm::term)
+                .limit(displayTerms)
+                .toList());
         persistIndexedCorpus(corpus, expertTerms);
 
         return 0;
@@ -310,7 +369,8 @@ public class CommandLineInterface {
     private List<TermSelectionService.SelectedTerm> resolveExpertTerms(
             LatentSpaceModel model,
             int topTerms,
-            String explicitTerms
+            String explicitTerms,
+            Map<String, TermStats> termStats
     ) {
         List<TermSelectionService.SelectedTerm> rankedTerms =
                 termSelectionService.selectTopTerms(model, Math.max(topTerms, model.terms().size()));
@@ -331,7 +391,7 @@ public class CommandLineInterface {
             }
 
             for (TermSelectionService.SelectedTerm rankedTerm : rankedTerms) {
-                if (!selectedTerms.contains(rankedTerm)) {
+                if (isUsableIndexTerm(rankedTerm.term(), termStats) && !selectedTerms.contains(rankedTerm)) {
                     selectedTerms.add(rankedTerm);
                 }
 
@@ -365,12 +425,128 @@ public class CommandLineInterface {
         return selectedTerms;
     }
 
-    private void printExpertTerms(List<TermSelectionService.SelectedTerm> expertTerms) {
+    private boolean isUsableIndexTerm(String term) {
+        return isUsableIndexTerm(term, Map.of());
+    }
+
+    private boolean isUsableIndexTerm(String term, Map<String, TermStats> termStats) {
+        if (term == null || term.isBlank()) {
+            return false;
+        }
+
+        String normalized = term.toLowerCase();
+
+        if (DEFAULT_EXPERT_TERM_SET.contains(normalized)) {
+            return true;
+        }
+
+        if (NON_INDEXING_TERMS.contains(normalized)) {
+            return false;
+        }
+
+        if (normalized.length() < 4) {
+            return false;
+        }
+
+        if (normalized.matches(".*\\d.*")) {
+            return false;
+        }
+
+        if (!normalized.matches(".*[aeiou].*")) {
+            return false;
+        }
+
+        TermStats stats = termStats.get(normalized);
+
+        if (stats == null) {
+            return true;
+        }
+
+        if (stats.documentFrequency() < 2 || stats.totalFrequency() < 4) {
+            return false;
+        }
+
+        if (stats.maxDocumentShare() > 0.80) {
+            return false;
+        }
+
+        return !stats.acronymLike() && !stats.properNameLike();
+    }
+
+    private Map<String, TermStats> buildTermStats(IndexingService.IndexedCorpus corpus) {
+        Map<String, Integer> totalFrequencies = new LinkedHashMap<>();
+        Map<String, Integer> documentFrequencies = new LinkedHashMap<>();
+        Map<String, Integer> maxDocumentFrequencies = new LinkedHashMap<>();
+        Map<String, Boolean> acronymLike = new LinkedHashMap<>();
+        Map<String, Boolean> properNameLike = new LinkedHashMap<>();
+
+        for (SemanticDocument document : corpus.semanticDocuments()) {
+            Map<String, Long> counts = document.canonicalTerms()
+                    .stream()
+                    .collect(Collectors.groupingBy(term -> term, LinkedHashMap::new, Collectors.counting()));
+            String rawText = String.valueOf(document.metadata().getOrDefault("rawText", ""));
+
+            for (Map.Entry<String, Long> entry : counts.entrySet()) {
+                String term = entry.getKey();
+                int count = entry.getValue().intValue();
+
+                totalFrequencies.merge(term, count, Integer::sum);
+                documentFrequencies.merge(term, 1, Integer::sum);
+                maxDocumentFrequencies.merge(term, count, Math::max);
+                acronymLike.merge(term, isUppercaseAcronymInRawText(term, rawText), Boolean::logicalOr);
+                properNameLike.merge(term, isProperNameInRawText(term, rawText), Boolean::logicalOr);
+            }
+        }
+
+        Map<String, TermStats> result = new LinkedHashMap<>();
+
+        for (String term : totalFrequencies.keySet()) {
+            int total = totalFrequencies.get(term);
+            int max = maxDocumentFrequencies.getOrDefault(term, 0);
+            double maxShare = total == 0 ? 0.0 : (double) max / total;
+
+            result.put(term, new TermStats(
+                    documentFrequencies.getOrDefault(term, 0),
+                    total,
+                    maxShare,
+                    acronymLike.getOrDefault(term, false),
+                    properNameLike.getOrDefault(term, false)
+            ));
+        }
+
+        return result;
+    }
+
+    private boolean isUppercaseAcronymInRawText(String term, String rawText) {
+        if (term.length() < 3 || term.length() > 6 || term.contains("_")) {
+            return false;
+        }
+
+        String uppercase = Pattern.quote(term.toUpperCase());
+        String lowercase = Pattern.quote(term.toLowerCase());
+
+        return Pattern.compile("\\b" + uppercase + "\\b").matcher(rawText).find()
+                && !Pattern.compile("\\b" + lowercase + "\\b").matcher(rawText).find();
+    }
+
+    private boolean isProperNameInRawText(String term, String rawText) {
+        if (term.length() < 4 || term.contains("_")) {
+            return false;
+        }
+
+        String titleCase = Pattern.quote(Character.toUpperCase(term.charAt(0)) + term.substring(1));
+        String lowercase = Pattern.quote(term.toLowerCase());
+
+        return Pattern.compile("\\b" + titleCase + "\\b").matcher(rawText).find()
+                && !Pattern.compile("\\b" + lowercase + "\\b").matcher(rawText).find();
+    }
+
+    private void printExpertTerms(List<TermSelectionService.SelectedTerm> expertTerms, int displayTerms) {
         System.out.println();
-        System.out.println("Expert-selected indexing terms to persist:");
+        System.out.println("Expert-selected indexing terms shown for review:");
 
         int position = 1;
-        for (TermSelectionService.SelectedTerm term : expertTerms) {
+        for (TermSelectionService.SelectedTerm term : expertTerms.stream().limit(displayTerms).toList()) {
             System.out.printf(
                     "%d. %s - significance: %.4f%n",
                     position,
@@ -379,6 +555,8 @@ public class CommandLineInterface {
             );
             position++;
         }
+
+        System.out.println("Total expert-selected terms used by the active index: " + expertTerms.size());
     }
 
     private void persistIndexedCorpus(
@@ -452,8 +630,12 @@ public class CommandLineInterface {
         }
     }
 
-    private void printFrequencyMatrixPreview(FrequencyMatrix matrix, int maxTerms) {
-        System.out.println("FrecT preview with the first " + maxTerms + " terms.");
+    private void printFrequencyMatrixPreview(
+            FrequencyMatrix matrix,
+            List<TermSelectionService.SelectedTerm> selectedTerms,
+            int maxTerms
+    ) {
+        System.out.println("FrecT preview with " + maxTerms + " expert-selected terms.");
         System.out.println("Columns: " + matrix.documentCodes());
         System.out.printf("%-24s", "term");
 
@@ -463,10 +645,21 @@ public class CommandLineInterface {
 
         System.out.println();
 
-        int limit = Math.min(maxTerms, matrix.terms().size());
+        Map<String, Integer> rowByTerm = new LinkedHashMap<>();
 
-        for (int row = 0; row < limit; row++) {
-            System.out.printf("%-24s", matrix.terms().get(row));
+        for (int row = 0; row < matrix.terms().size(); row++) {
+            rowByTerm.put(matrix.terms().get(row), row);
+        }
+
+        List<String> previewTerms = selectedTerms.stream()
+                .map(TermSelectionService.SelectedTerm::term)
+                .filter(rowByTerm::containsKey)
+                .limit(maxTerms)
+                .toList();
+
+        for (String term : previewTerms) {
+            int row = rowByTerm.get(term);
+            System.out.printf("%-24s", term);
 
             for (int col = 0; col < matrix.documentCodes().size(); col++) {
                 System.out.printf("%10.3f", matrix.values()[row][col]);
@@ -474,6 +667,15 @@ public class CommandLineInterface {
 
             System.out.println();
         }
+    }
+
+    private record TermStats(
+            int documentFrequency,
+            int totalFrequency,
+            double maxDocumentShare,
+            boolean acronymLike,
+            boolean properNameLike
+    ) {
     }
 
     private void printComparison(DocumentSimilarityService.ComparisonResult result) {
@@ -564,7 +766,11 @@ public class CommandLineInterface {
         int position = 1;
 
         for (TermSelectionService.SelectedTerm term
-                : termSelectionService.selectTopTerms(model, topTerms)) {
+                : termSelectionService.selectTopTerms(model, Math.max(topTerms, model.terms().size()))
+                .stream()
+                .filter(selectedTerm -> isUsableIndexTerm(selectedTerm.term()))
+                .limit(topTerms)
+                .toList()) {
             System.out.printf(
                     "%d. %s - significance: %.4f%n",
                     position,
@@ -664,11 +870,12 @@ public class CommandLineInterface {
         System.out.println("Commands:");
         System.out.println("  compare-docs --d1 D1 --d2 D3");
         System.out.println("  demo-pipeline --k 3 --terms 8 --save-model true");
-        System.out.println("  final-demo --k 3 --terms 10 --top 5 --matrix preview");
-        System.out.println("  final-demo --k 3 --terms 10 --top 5 --matrix full");
+        System.out.println("  final-demo --k 3 --terms 10 --index-terms 150 --top 5 --matrix preview");
+        System.out.println("  final-demo --k 3 --terms 10 --index-terms 150 --top 5 --matrix full");
         System.out.println("  final-demo --expert-terms depression,anxiety,social_media");
         System.out.println("  inspect-lsi --k 3 --terms 10");
         System.out.println("  select-terms --terms depression,anxiety --k 3");
+        System.out.println("  select-terms --top 10 --index-terms 150 --k 3");
         System.out.println("  query --text \"academic stress anxiety\" --top 5 --metric cosine");
         System.out.println("  query --text \"sleep wellbeing\" --top 3 --metric jaccard");
         System.out.println("  query --text \"academic stress\" --top 3 --metric euclidean");

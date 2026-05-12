@@ -13,7 +13,7 @@ The project implements a document base that extracts, indexes, represents, and q
 5. `SemanticPipeline` resolves domain phrases/polysemy and normalizes synonyms.
 6. `FrequencyMatrixBuilder` builds the initial FrecT with terms as rows and documents as columns.
 7. `LsiReducer` applies SVD and creates the initial latent representation.
-8. `TermSelectionService` ranks terms by LSI significance; the expert-selected terms are then used to rebuild FrecT/LSI as the active filtered index.
+8. `TermSelectionService` ranks terms by LSI significance; the expert-selected vocabulary is then used to rebuild FrecT/LSI as the active filtered index. The demo shows 10 terms for review and keeps 150 selected terms by default for the active representation.
 9. `QueryProcessor` executes document comparison and top-n retrieval against the active filtered index.
 10. `CorpusPersistenceService` persists documents, terms, FrecT rows, LSI document vectors, and expert-selected indexing terms when PostgreSQL is available.
 11. `QueryResultPersistenceService` persists query runs and ranked results when PostgreSQL is available.
