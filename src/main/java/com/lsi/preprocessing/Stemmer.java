@@ -1,5 +1,10 @@
 package com.lsi.preprocessing;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +18,7 @@ public class Stemmer {
     private final Map<String, String> suffixRules;
 
     public Stemmer() {
-        this.suffixRules = defaultSuffixRules();
+        this.suffixRules = loadSuffixRules();
     }
 
     public Stemmer(Map<String, String> suffixRules) {
@@ -69,6 +74,41 @@ public class Stemmer {
         rules.put("s", "");
 
         return rules;
+    }
+
+    private Map<String, String> loadSuffixRules() {
+        InputStream stream = Stemmer.class.getResourceAsStream("/suffixes.txt");
+
+        if (stream == null) {
+            return defaultSuffixRules();
+        }
+
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(stream, StandardCharsets.UTF_8)
+        )) {
+            Map<String, String> rules = new LinkedHashMap<>();
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                String trimmed = line.trim();
+
+                if (trimmed.isBlank() || trimmed.startsWith("#")) {
+                    continue;
+                }
+
+                String[] parts = trimmed.split("=", 2);
+                String suffix = parts[0].trim();
+                String replacement = parts.length > 1 ? parts[1].trim() : "";
+
+                if (!suffix.isBlank()) {
+                    rules.put(suffix, replacement);
+                }
+            }
+
+            return rules.isEmpty() ? defaultSuffixRules() : rules;
+        } catch (IOException e) {
+            return defaultSuffixRules();
+        }
     }
 }
 

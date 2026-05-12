@@ -1,5 +1,10 @@
 package com.lsi.semantic;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -14,7 +19,7 @@ public class PolysemyResolver {
     private final Map<String, String> pairRules;
 
     public PolysemyResolver() {
-        this(defaultPairRules());
+        this(loadPairRules());
     }
 
     public PolysemyResolver(Map<String, String> pairRules) {
@@ -69,6 +74,55 @@ public class PolysemyResolver {
         addSymmetric(values, "physical", "activity", "physical_activity");
 
         return values;
+    }
+
+    private static Map<String, String> loadPairRules() {
+        InputStream stream = PolysemyResolver.class.getResourceAsStream("/polysemy_rules.csv");
+
+        if (stream == null) {
+            return defaultPairRules();
+        }
+
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(stream, StandardCharsets.UTF_8)
+        )) {
+            Map<String, String> values = new LinkedHashMap<>();
+            String line;
+            boolean firstLine = true;
+
+            while ((line = reader.readLine()) != null) {
+                String trimmed = line.trim();
+
+                if (trimmed.isBlank() || trimmed.startsWith("#")) {
+                    continue;
+                }
+
+                if (firstLine) {
+                    firstLine = false;
+                    if (trimmed.toLowerCase(Locale.ROOT).startsWith("ambiguous_term,")) {
+                        continue;
+                    }
+                }
+
+                String[] parts = trimmed.split(",", 4);
+
+                if (parts.length < 3) {
+                    continue;
+                }
+
+                String ambiguousTerm = parts[0].trim();
+                String contextToken = parts[1].trim();
+                String assignedSense = parts[2].trim();
+
+                if (!ambiguousTerm.isBlank() && !contextToken.isBlank() && !assignedSense.isBlank()) {
+                    addSymmetric(values, ambiguousTerm, contextToken, assignedSense);
+                }
+            }
+
+            return values.isEmpty() ? defaultPairRules() : values;
+        } catch (IOException e) {
+            return defaultPairRules();
+        }
     }
 
     private static void addSymmetric(

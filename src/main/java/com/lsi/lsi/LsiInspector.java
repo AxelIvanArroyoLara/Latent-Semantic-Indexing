@@ -22,11 +22,7 @@ public class LsiInspector {
                 .append(model.k())
                 .append("\n\n");
 
-        // =========================================
-        // Singular values
-        // =========================================
-
-        sb.append("Valores singulares:\n");
+        sb.append("Singular values:\n");
 
         double[] sv = model.singularValues();
 
@@ -35,7 +31,7 @@ public class LsiInspector {
         for (int i = 0; i < sv.length; i++) {
 
             sb.append(String.format(
-                    "  Ïƒ%d = %.4f%n",
+                    "  sigma_%d = %.4f%n",
                     i + 1,
                     sv[i]
             ));
@@ -44,39 +40,31 @@ public class LsiInspector {
         }
 
         sb.append(String.format(
-                "%nVarianza retenida: %.4f%n",
+                "%nRetained variance: %.4f%n",
                 retainedVariance
         ));
 
-        // =========================================
-        // Matrix dimensions
-        // =========================================
+        sb.append("\nRepresentations:\n");
 
-        sb.append("\nRepresentaciones:\n");
-
-        sb.append("  Documentos: ")
+        sb.append("  Documents: ")
                 .append(model.documentVectors().length)
                 .append(" x ")
                 .append(model.k())
                 .append("\n");
 
-        sb.append("  TÃ©rminos: ")
+        sb.append("  Terms: ")
                 .append(model.termVectors().length)
                 .append(" x ")
                 .append(model.k())
                 .append("\n");
 
-        // =========================================
-        // Semantic interpretation
-        // =========================================
-
-        sb.append("\n=========== COMPONENTES ===========\n");
+        sb.append("\n=========== COMPONENTS ===========\n");
 
         for (int component = 0;
              component < model.k();
              component++) {
 
-            sb.append("\nComponente ")
+            sb.append("\nComponent ")
                     .append(component + 1)
                     .append(":\n");
 
@@ -117,10 +105,6 @@ public class LsiInspector {
         return sb.toString();
     }
 
-    // =============================================
-    // Validation
-    // =============================================
-
     private static void validate(
             LatentSpaceModel model
     ) {
@@ -156,13 +140,8 @@ public class LsiInspector {
         }
     }
 
-    // =============================================
-    // Helper record
-    // =============================================
-
     private record TermWeight(
             String term,
             double weight
     ) {}
 }
-
