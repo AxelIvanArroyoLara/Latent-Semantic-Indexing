@@ -15,6 +15,8 @@ import com.lsi.query.DocumentSimilarityService;
 import com.lsi.query.QueryProcessor;
 import com.lsi.query.RankingService;
 
+import com.lsi.persistence.CorpusPersistenceService;
+
 public class CommandLineInterface {
 
     private QueryProcessor queryProcessor;
@@ -80,6 +82,10 @@ public class CommandLineInterface {
                 return runFinalDemo(options);
             }
 
+            if ("import-pdfs-db".equalsIgnoreCase(command)) {
+                return runImportPdfsToDatabase(options);
+            }
+
             System.out.println("Unknown command: " + command);
             printHelp();
             return 1;
@@ -124,6 +130,25 @@ public class CommandLineInterface {
         QueryProcessor processor = new QueryProcessor(corpus);
         FrequencyMatrix matrix = corpus.frequencyMatrix();
         LatentSpaceModel model = corpus.latentSpaceModel();
+
+        boolean persist = Boolean.parseBoolean(options.getOrDefault("persist", "true"));
+
+        if (useDatabase && persist) {
+            CorpusPersistenceService persistenceService = new CorpusPersistenceService();
+
+            CorpusPersistenceService.PersistenceSummary summary =
+                    persistenceService.persist(
+                            corpus,
+                            termSelectionService.selectTopTerms(model, topTerms)
+                    );
+
+            System.out.println("PostgreSQL persistence completed:");
+            System.out.println("  documents: " + summary.documents());
+            System.out.println("  terms: " + summary.terms());
+            System.out.println("  frequency rows: " + summary.frequencyRows());
+            System.out.println("  latent model id: " + summary.latentModelId());
+            System.out.println("  selected terms: " + summary.selectedTerms());
+        }
 
         printSection("FINAL PROJECT TECHNICAL DEMONSTRATION");
         System.out.println("Demonstrated objective: document base with LSI to index, represent, and query documents.");
@@ -402,6 +427,18 @@ public class CommandLineInterface {
 
         return 0;
     }
+    // Integración final de importación de pdfs para poder pasarlo a la base de datos
+    private int runImportPdfsToDatabase(Map<String, String> options) {
+        boolean reset = Boolean.parseBoolean(options.getOrDefault("reset", "true"));
+
+        int count = indexingService.importRawPdfsToDatabase(reset);
+
+        System.out.println("Imported PDF documents into PostgreSQL: " + count);
+        System.out.println("Source directory: " + AppConfig.RAW_DOCUMENT_DIR);
+        System.out.println("Reset existing documents: " + reset);
+
+        return 0;
+    }
 
     private Map<String, String> parseOptions(String[] args) {
         Map<String, String> options = new LinkedHashMap<>();
@@ -457,6 +494,7 @@ public class CommandLineInterface {
         System.out.println("  query --text \"academic stress anxiety\" --top 5 --metric cosine");
         System.out.println("  query --text \"sleep wellbeing\" --top 3 --metric jaccard");
         System.out.println("  query --text \"academic stress\" --top 3 --metric euclidean");
+        System.out.println("  import-pdfs-db --reset true");
         System.out.println();
         System.out.println("Optional flags for pipeline commands:");
         System.out.println("  --source db       Use the PostgreSQL document base instead of the local PDF corpus");

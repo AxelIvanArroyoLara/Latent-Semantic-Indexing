@@ -267,6 +267,27 @@ public class IndexingService {
         }
     }
 
+    public int importRawPdfsToDatabase(boolean clearExisting) {
+        List<Document> documents = loadDocumentsFromRawPdfs(AppConfig.RAW_DOCUMENT_DIR);
+
+        if (clearExisting) {
+            documentRepository.deleteAll();
+        }
+
+        for (Document document : documents) {
+            documentRepository.saveOrUpdate(
+                    document.code(),
+                    document.title(),
+                    document.source(),
+                    document.rawText(),
+                    document.normalizedText(),
+                    "en"
+            );
+        }
+
+        return documents.size();
+    }
+
     private ExtractedPdf extractPdf(Path pdf) {
         try (PDDocument document = Loader.loadPDF(pdf.toFile())) {
             PDFTextStripper stripper = new PDFTextStripper();
