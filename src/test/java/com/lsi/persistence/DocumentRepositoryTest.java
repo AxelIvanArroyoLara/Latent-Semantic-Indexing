@@ -14,6 +14,7 @@ class DocumentRepositoryTest {
 
     @BeforeEach
     void setUp() {
+        DatabaseTestSupport.assumeDatabaseAvailable();
         repository = new DocumentRepository();
         repository.deleteAll();
     }

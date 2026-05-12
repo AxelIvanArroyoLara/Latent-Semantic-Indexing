@@ -1,1 +1,13 @@
-# Aquí van las reglas de sufijos utilizadas para normalización o stemming simple.
+ization=ize
+ational=ate
+fulness=ful
+ousness=ous
+iveness=ive
+tional=tion
+biliti=ble
+ing=
+edly=
+ed=
+ies=y
+es=
+s=

@@ -14,6 +14,7 @@ class TermRepositoryTest {
 
     @BeforeEach
     void setUp() {
+        DatabaseTestSupport.assumeDatabaseAvailable();
         repository = new TermRepository();
         repository.deleteAll();
     }

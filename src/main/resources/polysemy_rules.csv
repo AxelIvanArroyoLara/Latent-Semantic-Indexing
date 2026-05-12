@@ -1,1 +1,14 @@
-# Aquí van las reglas o pistas contextuales para manejar polisemia.
+ambiguous_term,context_token,assigned_sense,priority
+support,university,institutional_support,100
+support,campus,institutional_support,90
+support,counseling,psychological_support,80
+support,emotional,emotional_support,70
+pressure,academic,academic_pressure,100
+stress,academic,academic_stress,90
+health,mental,mental_health,100
+media,social,social_media,100
+sleep,quality,sleep_quality,100
+campus,wellbeing,campus_wellbeing,90
+counseling,services,counseling_services,90
+help,seeking,help_seeking,90
+self,regulation,self_regulation,90

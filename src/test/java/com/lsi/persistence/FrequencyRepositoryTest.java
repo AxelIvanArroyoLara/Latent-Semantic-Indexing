@@ -16,6 +16,7 @@ class FrequencyRepositoryTest {
 
     @BeforeEach
     void setUp() {
+        DatabaseTestSupport.assumeDatabaseAvailable();
         documentRepository = new DocumentRepository();
         termRepository = new TermRepository();
         frequencyRepository = new FrequencyRepository();

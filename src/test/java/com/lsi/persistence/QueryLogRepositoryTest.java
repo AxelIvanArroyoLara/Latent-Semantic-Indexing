@@ -15,6 +15,7 @@ class QueryLogRepositoryTest {
 
     @BeforeEach
     void setUp() {
+        DatabaseTestSupport.assumeDatabaseAvailable();
         documentRepository = new DocumentRepository();
         queryLogRepository = new QueryLogRepository();
 

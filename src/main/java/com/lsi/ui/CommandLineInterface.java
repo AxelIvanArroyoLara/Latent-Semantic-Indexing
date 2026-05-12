@@ -2,6 +2,8 @@ package com.lsi.ui;
 
 import com.lsi.config.AppConfig;
 import com.lsi.indexing.IndexingService;
+import com.lsi.lsi.LsiInspector;
+import com.lsi.lsi.TermSelectionService;
 import com.lsi.model.FrequencyMatrix;
 import com.lsi.model.LatentSpaceModel;
 import com.lsi.persistence.FileLatentModelRepository;
@@ -16,6 +18,7 @@ public class CommandLineInterface {
 
     private final QueryProcessor queryProcessor;
     private final IndexingService indexingService;
+    private final TermSelectionService termSelectionService;
 
     public CommandLineInterface() {
         this(new IndexingService());
@@ -24,11 +27,13 @@ public class CommandLineInterface {
     public CommandLineInterface(QueryProcessor queryProcessor) {
         this.queryProcessor = queryProcessor;
         this.indexingService = new IndexingService();
+        this.termSelectionService = new TermSelectionService();
     }
 
     public CommandLineInterface(IndexingService indexingService) {
         this.indexingService = indexingService;
         this.queryProcessor = new QueryProcessor(indexingService.indexQueryFixtures());
+        this.termSelectionService = new TermSelectionService();
     }
 
     public static void main(String[] args) {
@@ -59,6 +64,10 @@ public class CommandLineInterface {
 
             if ("demo-pipeline".equalsIgnoreCase(command)) {
                 return runDemoPipeline(options);
+            }
+
+            if ("inspect-lsi".equalsIgnoreCase(command)) {
+                return runInspectLsi(options);
             }
 
             System.out.println("Unknown command: " + command);
@@ -112,12 +121,48 @@ public class CommandLineInterface {
         System.out.println("Frequency matrix: " + matrix.values().length + "x" + matrix.documentCodes().size());
         System.out.println("LSI dimensions: " + model.k());
         System.out.println("Document vectors: " + model.documentVectors().length);
+        printSelectedTerms(model, Integer.parseInt(options.getOrDefault("terms", "8")));
 
         if (Boolean.parseBoolean(options.getOrDefault("save-model", "false"))) {
             System.out.println("Model saved to: " + AppConfig.DEFAULT_MODEL_FILE);
         }
 
         return 0;
+    }
+
+    private int runInspectLsi(Map<String, String> options) {
+        int dimensions = Integer.parseInt(
+                options.getOrDefault("k", String.valueOf(AppConfig.DEFAULT_LSI_DIMENSIONS))
+        );
+        int topTerms = Integer.parseInt(options.getOrDefault("terms", "10"));
+
+        LatentSpaceModel model = indexingService.indexQueryFixtures(
+                AppConfig.QUERY_FIXTURE_DIR,
+                dimensions
+        ).latentSpaceModel();
+
+        System.out.println(LsiInspector.inspect(model));
+        printSelectedTerms(model, topTerms);
+
+        return 0;
+    }
+
+    private void printSelectedTerms(LatentSpaceModel model, int topTerms) {
+        System.out.println();
+        System.out.println("Top indexing terms for expert review:");
+
+        int position = 1;
+
+        for (TermSelectionService.SelectedTerm term
+                : termSelectionService.selectTopTerms(model, topTerms)) {
+            System.out.printf(
+                    "%d. %s - significance: %.4f%n",
+                    position,
+                    term.term(),
+                    term.significance()
+            );
+            position++;
+        }
     }
 
     private int runQuery(Map<String, String> options) {
@@ -193,7 +238,8 @@ public class CommandLineInterface {
         System.out.println();
         System.out.println("Commands:");
         System.out.println("  compare-docs --d1 D1 --d2 D3");
-        System.out.println("  demo-pipeline --k 3 --save-model true");
+        System.out.println("  demo-pipeline --k 3 --terms 8 --save-model true");
+        System.out.println("  inspect-lsi --k 3 --terms 10");
         System.out.println("  query --text \"academic stress anxiety\" --top 5 --metric cosine");
         System.out.println("  query --text \"sleep wellbeing\" --top 3 --metric jaccard");
         System.out.println("  query --text \"academic stress\" --top 3 --metric euclidean");

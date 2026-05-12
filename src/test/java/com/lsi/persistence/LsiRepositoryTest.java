@@ -15,6 +15,7 @@ class LsiRepositoryTest {
 
     @BeforeEach
     void setUp() {
+        DatabaseTestSupport.assumeDatabaseAvailable();
         documentRepository = new DocumentRepository();
         lsiRepository = new LsiRepository();
 

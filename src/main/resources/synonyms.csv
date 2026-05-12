@@ -1,1 +1,14 @@
-# Aquí va el diccionario de sinónimos que usará el módulo semántico.
+canonical_term,synonym_term,direction_type
+stress,tension,bidirectional
+stress,pressure,bidirectional
+anxiety,worry,bidirectional
+anxiety,nervousness,bidirectional
+burnout,exhaustion,bidirectional
+depression,sadness,bidirectional
+sleep,rest,bidirectional
+physical_activity,exercise,bidirectional
+counseling,therapy,bidirectional
+counseling,counselling,bidirectional
+wellbeing,wellness,bidirectional
+concentration,focus,bidirectional
+social_media,network,bidirectional
