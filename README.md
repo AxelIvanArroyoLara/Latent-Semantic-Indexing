@@ -8,27 +8,61 @@ The project satisfies the final-project objective: create and manipulate a docum
 
 The demonstrated corpus focuses on mental health and wellbeing among university students, a public-health and welfare domain.
 
+## Quick Start / Full Execution Guide
+
+To run the project from zero with PostgreSQL persistence, follow:
+
+[docs/execution-guide.md](docs/execution-guide.md)
+
+This guide explains how to configure PostgreSQL, run Flyway migrations, import the real PDFs from `data/raw`, execute the final demo with `--source db --persist true`, persist query results, and validate the database with SQL scripts.
+
+This is the recommended path for evaluating the final integrated version of the project.
+
 ## Main Runtime
 
-Run the complete final-project demonstration from `main`:
+The recommended database-backed execution uses PostgreSQL as the document source and persists the generated artifacts.
+
+First import the real PDFs from `data/raw` into PostgreSQL:
+
+```powershell
+mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=import-pdfs-db --reset true"
+```
+
+Then run the final demo using the database:
+
+```powershell
+mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=final-demo --source db --persist true"
+```
+
+This execution path loads documents from PostgreSQL, builds FrecT, applies SVD/LSI, persists the generated terms, frequencies, LSI model, document vectors, selected indexing terms, and prints the guided final-project demonstration.
+
+Running without arguments is still supported:
 
 ```powershell
 mvn exec:java "-Dexec.mainClass=com.lsi.App"
 ```
 
-Running with no arguments starts `com.lsi.App`, delegates to `CommandLineInterface`, and executes the guided final demo.
+However, for the final reproducible database integration, use the explicit `--source db --persist true` commands above.
 
-Useful explicit commands:
+### Query examples with persistence
+
+For query commands with spaces in the `--text` argument, Git Bash is recommended.
+
+```bash
+mvn exec:java -Dexec.mainClass=com.lsi.App -Dexec.args="query --source db --text \"academic stress anxiety\" --top 5 --metric cosine --persist true"
+mvn exec:java -Dexec.mainClass=com.lsi.App -Dexec.args="query --source db --text \"sleep wellbeing\" --top 5 --metric jaccard --persist true"
+mvn exec:java -Dexec.mainClass=com.lsi.App -Dexec.args="query --source db --text \"academic stress\" --top 5 --metric euclidean --persist true"
+```
+
+These commands persist query executions in `query_runs` and ranked results in `query_results`.
+
+### Other useful commands
 
 ```powershell
-mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=final-demo --k 3 --terms 10 --index-terms 150 --top 5 --matrix preview"
-mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=final-demo --k 3 --terms 10 --index-terms 150 --top 5 --matrix full"
-mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=final-demo --expert-terms depression,anxiety,social_media"
-mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=select-terms --terms depression,anxiety --k 3"
+mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=final-demo --source pdf"
+mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=demo-pipeline --source db --k 3 --terms 8"
+mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=inspect-lsi --source db --k 3 --terms 10"
 mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=compare-docs --d1 D1 --d2 D3"
-mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=query --text \"academic stress anxiety\" --top 5 --metric cosine"
-mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=query --text \"sleep wellbeing\" --top 5 --metric jaccard"
-mvn exec:java "-Dexec.mainClass=com.lsi.App" "-Dexec.args=query --text \"academic stress\" --top 5 --metric euclidean"
 ```
 
 ## Functional Coverage
@@ -58,6 +92,7 @@ lsi/
 │   ├── processed/
 │   └── raw/
 ├── docs/
+│   ├── execution-guide.md
 │   ├── architecture-overview.md
 │   ├── query-examples.md
 │   ├── final-sql-verification.md
@@ -126,8 +161,10 @@ Core tables:
 Load migrations:
 
 ```powershell
-mvn flyway:migrate
+mvn flyway:migrate "-Dflyway.password=your_password_here"
 ```
+
+If the password is already configured through `application.properties` or environment variables, `mvn flyway:migrate` may also work.
 
 Run final SQL verification:
 
@@ -178,6 +215,7 @@ The final demo first builds an initial LSI model from the full extracted PDF cor
 
 ## Documentation
 
+- `docs/execution-guide.md`: step-by-step guide to install, configure PostgreSQL, import PDFs, run the database-backed demo, persist queries, and validate SQL results.
 - `docs/architecture-overview.md`: module architecture and runtime flow.
 - `docs/query-examples.md`: CLI and SQL query examples.
 - `docs/final-sql-verification.md`: final SQL verification checklist.

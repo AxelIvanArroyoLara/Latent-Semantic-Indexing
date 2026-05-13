@@ -63,6 +63,52 @@ public class DocumentRepository {
         }
     }
 
+    public long saveOrUpdate(
+            String code,
+            String title,
+            String source,
+            String rawText,
+            String normalizedText,
+            String languageCode
+    ) {
+        String sql = """
+            INSERT INTO documents (code, title, source, raw_text, normalized_text, language_code)
+            VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT (code)
+            DO UPDATE SET
+                title = EXCLUDED.title,
+                source = EXCLUDED.source,
+                raw_text = EXCLUDED.raw_text,
+                normalized_text = EXCLUDED.normalized_text,
+                language_code = EXCLUDED.language_code
+            RETURNING document_id
+            """;
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, code);
+            statement.setString(2, title);
+            statement.setString(3, source);
+            statement.setString(4, rawText);
+            statement.setString(5, normalizedText);
+            statement.setString(6, languageCode);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getLong("document_id");
+                }
+            }
+
+            throw new SQLException("Document upsert did not return an id.");
+
+        } catch (SQLException e) {
+            throw new RepositoryException("Could not save or update document with code: " + code, e);
+        }
+    }
+
+
+
     public Optional<DocumentRow> findById(long documentId) {
         String sql = """
                 SELECT document_id, code, title, source, raw_text, normalized_text, language_code, created_at

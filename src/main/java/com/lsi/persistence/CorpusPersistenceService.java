@@ -50,6 +50,7 @@ public class CorpusPersistenceService {
             IndexingService.IndexedCorpus corpus,
             List<TermSelectionService.SelectedTerm> expertTerms
     ) {
+        clearDerivedData();
         Map<String, Long> documentIds = persistDocuments(corpus);
         Map<String, Long> termIds = persistTerms(corpus.frequencyMatrix());
         int frequencyRows = persistFrequencies(corpus.frequencyMatrix(), documentIds, termIds);
@@ -178,6 +179,13 @@ public class CorpusPersistenceService {
         }
 
         return rows;
+    }
+
+    private void clearDerivedData() {
+        selectedTermRepository.deleteAll();
+        lsiRepository.deleteAll();
+        frequencyRepository.deleteAll();
+        termRepository.deleteAll();
     }
 
     public List<TermSelectionService.SelectedTerm> defaultExpertTerms(

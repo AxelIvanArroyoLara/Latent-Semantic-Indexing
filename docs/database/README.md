@@ -1,7 +1,8 @@
 # Dev 2 — Módulo de Base de Datos y Persistencia
 
-Esta carpeta documenta el módulo de base de datos y persistencia desarrollado para el proyecto **LSI Document Base**.
-
+> Esta carpeta contiene documentación técnica extendida del módulo de base de datos y persistencia.
+> Para ejecutar el proyecto desde cero, consulta primero [`../execution-guide.md`](../execution-guide.md).
+> 
 El objetivo de este módulo es proporcionar una capa de persistencia relacional confiable para el sistema. Esta capa define el esquema en PostgreSQL, administra la evolución de la base de datos mediante migraciones Flyway, expone repositorios Java para acceder a la información y deja pruebas, consultas de verificación y datos demo para facilitar la integración con el resto del equipo.
 
 ---

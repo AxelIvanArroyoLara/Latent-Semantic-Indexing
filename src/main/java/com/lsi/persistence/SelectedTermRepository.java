@@ -58,6 +58,19 @@ public class SelectedTermRepository {
         }
     }
 
+    public int deleteAll() {
+        String sql = "DELETE FROM selected_index_terms";
+
+        try (Connection connection = dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            return statement.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RepositoryException("Could not delete selected index terms.", e);
+        }
+    }
+
     public static class RepositoryException extends RuntimeException {
         public RepositoryException(String message, Throwable cause) {
             super(message, cause);
