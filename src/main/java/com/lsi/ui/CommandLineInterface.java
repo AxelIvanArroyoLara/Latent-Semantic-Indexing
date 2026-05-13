@@ -14,6 +14,8 @@ import com.lsi.persistence.FileLatentModelRepository;
 import com.lsi.query.DocumentSimilarityService;
 import com.lsi.query.QueryProcessor;
 import com.lsi.query.RankingService;
+import com.lsi.persistence.DocumentRepository;
+import com.lsi.persistence.QueryLogRepository;
 
 import com.lsi.persistence.CorpusPersistenceService;
 
@@ -400,6 +402,12 @@ public class CommandLineInterface {
         QueryProcessor processor = new QueryProcessor(corpus);
         QueryProcessor.QueryRun run = processor.query(text, top, metric);
 
+        boolean persist = Boolean.parseBoolean(options.getOrDefault("persist", "false"));
+
+        if (useDatabase && persist) {
+            persistQueryRun(run);
+        }
+
         System.out.println("=== Query ranking ===");
         System.out.println("Query: " + run.queryText());
         System.out.println("Metric: " + run.metric());
@@ -479,6 +487,40 @@ public class CommandLineInterface {
         }
 
         return queryProcessor;
+    }
+
+    private void persistQueryRun(QueryProcessor.QueryRun run) {
+        QueryLogRepository queryLogRepository = new QueryLogRepository();
+        DocumentRepository documentRepository = new DocumentRepository();
+
+        long queryRunId = queryLogRepository.saveQueryRun(
+                run.queryText(),
+                run.metric(),
+                run.topN()
+        );
+
+        int rank = 1;
+
+        for (RankingService.RankedDocument document : run.results()) {
+            long documentId = documentRepository.findByCode(document.code())
+                    .orElseThrow(() -> new IllegalStateException(
+                            "Document not found while persisting query result: " + document.code()
+                    ))
+                    .documentId();
+
+            queryLogRepository.saveQueryResult(
+                    queryRunId,
+                    rank,
+                    documentId,
+                    document.score()
+            );
+
+            rank++;
+        }
+
+        System.out.println("Query persistence completed:");
+        System.out.println("  query_run_id: " + queryRunId);
+        System.out.println("  results: " + run.results().size());
     }
 
     private void printHelp() {
